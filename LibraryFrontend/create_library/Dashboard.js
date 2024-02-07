@@ -2,7 +2,7 @@ import { Text, View, Button } from "@gluestack-ui/themed";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { useWindowDimensions } from 'react-native';
 
-import CustomDrawerContent from "./CustomSidebarMenu";
+import CustomDrawerContent from "./CustomDrawerContent";
 
 function HomeScreen({ navigation }) {
     return (
