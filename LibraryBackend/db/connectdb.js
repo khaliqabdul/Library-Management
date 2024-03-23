@@ -14,7 +14,7 @@ const connectDB = async (DATABASE_URL) => {
 module.exports = connectDB
 
 // // creating a database
-// mongoose.connect("mongodb://localhost:27017/Student")
+// mongoose.connect("mongodb://localhost:27017/library-management")
 // .then(() => {
 //     console.log("mongodb connected successfully...")
 // })

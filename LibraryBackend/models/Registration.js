@@ -7,7 +7,8 @@ const registrationSchema = new mongoose.Schema({
     lastName: {type: String, required: true},
     email: {type: String, unique: true, required: true, trim: true},
     password: {type:String, required: true},
-    confirmPassword: {type: String, required: true}
+    confirmPassword: {type: String, required: true},
+    avatar: Buffer,
 });
 
 // this will execute before saving registrationSchema

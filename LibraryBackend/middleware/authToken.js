@@ -1,25 +1,33 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const User = mongoose.model("Registration");
 const jwt = require("jsonwebtoken");
-const { jwtKey } = require('../keys');
+const { jwtKey } = require("../keys");
 
-
-module.exports = (req, res, next) => {
-    const { authorization } = req.headers
-    // authorization === Bearer hhkjlhodyNWDMNKJYUPONBKJVC...
-    if(!authorization){
-        return res.status(401).send({error:"You must be logged in...dear"})
+module.exports = async (req, res, next) => {
+  const { authorization } = req.headers;
+  if (authorization) {
+    const token = authorization.replace("Bearer ", "");
+    try {
+      const verifyToken = jwt.verify(token, jwtKey);
+      const user = await User.findById(verifyToken.userId);
+      if (!user) {
+        return res.json({ success: false, message: "unauthorized access!" });
+      }
+      req.user = user;
+      next();
+    } catch (error) {
+      if (error.name === "JsonWebTokenError") {
+        return res.json({ success: false, message: "unauthorised access!" });
+      }
+      if (error.name === "TokenExpiredError") {
+        return res.json({
+          success: false,
+          message: "Session Expired, Try Sign in!",
+        });
+      }
+      res.json({success: false, message: "Internal server error!"})
     }
-    const token = authorization.replace("Bearer ","");
-    jwt.verify(token, jwtKey, async (error, payload) => {
-        if(error){
-            return res.status(401).send({error:"You must be logged in.."})
-        }
-        // get userId which we have sent as payload jwt.sign({userId: register._Id}, jwtKey)
-        const {userId} = payload
-        // console.log(payload)
-        const user = await User.findById(userId)
-        req.user = user
-        next();
-    })
+  } else {
+    res.json({ success: false, message: "unauthorized access!" });
+  }
 };

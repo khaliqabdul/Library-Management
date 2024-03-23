@@ -1,8 +1,12 @@
 import { Text, View, Button } from "@gluestack-ui/themed";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { useWindowDimensions } from 'react-native';
+import { useWindowDimensions, StyleSheet } from 'react-native';
 
 import CustomDrawerContent from "./CustomDrawerContent";
+import AddReader from "../components/AddReader";
+import Colors from "../components/Colors";
+import ImageUpload from '../components/ImageUpload';
+
 
 function HomeScreen({ navigation }) {
     return (
@@ -28,14 +32,6 @@ function HomeScreen({ navigation }) {
     );
   }
 
-  function Feed() {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Feed Screen</Text>
-        </View>
-    );
-}
-
 function Article() {
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -55,13 +51,34 @@ export default function Dashboard() {
                 initialRouteName='HomeScreen'
                 screenOptions={{
                     drawerType: dimensions.width >= 768 ? 'permanent' : 'front',
+                    headerShown: true,
+                    headerTitle: '',
+                    overlayColor: 'transparent',
+                    drawerStyle: styles.drawerStyle,
+                    drawerActiveBackgroundColor: Colors.red,
+                    drawerItemStyle: styles.drawerItemStyles,
+                    drawerActiveTintColor: Colors.yellow,
+                    drawerLabelStyle: styles.drawerLabelStyles,
                 }}
             >
-                <Drawer.Screen name='HomeScreen' component={HomeScreen} />
+                <Drawer.Screen name='HomeScreen' component={ImageUpload} />
                 <Drawer.Screen name='Notifications' component={NotificationsScreen}/>
-                <Drawer.Screen name='Feed' component={Feed}/>
+                <Drawer.Screen name='Add Reader Screen' component={AddReader}/>
                 <Drawer.Screen name='Article' component={Article}/>
             </Drawer.Navigator>
         </>
     )
 }
+
+const styles = StyleSheet.create({
+  drawerStyle: {
+    width: 240,
+  },
+  drawerItemStyles: {
+    borderRadius: 5,
+  },
+  drawerLabelStyles: {
+    fontSize: 16,
+    marginHorizontal: 16,
+  },
+})
