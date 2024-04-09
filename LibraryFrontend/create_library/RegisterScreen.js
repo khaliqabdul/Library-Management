@@ -7,32 +7,49 @@ import {
 } from "@gluestack-ui/themed";
 import { StyleSheet } from "react-native";
 import { useState } from "react";
-import axios from "axios";
 
-import FormInput from "../components/loginSignup/FormInput"
+import FormInput from "../components/loginSignup/FormInput";
 import FormHeader from "../components/loginSignup/ٖFormHeader";
 import FormSelectorButton from "../components/loginSignup/FormSelectorButton";
 import FormSubmitButton from "../components/loginSignup/FormSubmitButton";
-import { isValidFieldObject, isvalidEmail, updateError } from "../components/utils/formValidationMethods";
-import client from "../components/api/client";
+import {
+  isValidFieldObject,
+  isvalidEmail,
+  updateError,
+} from "../components/utils/formValidationMethods";
+import LoadingScreen from "../components/loginSignup/LoadingScreen";
+import { useLogin } from "../components/context/LoginProvider";
+import { signUp } from "../components/api/user";
 
 export default function RegisterScreen({ navigation }) {
+  const { loginPending, setLoginPending } = useLogin();
   const [userInfo, setUserInfo] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [error, setError] = useState("");
-  const { firstName, lastName, email, password, confirmPassword } = userInfo
- 
+  const { firstName, lastName, email, password, confirmPassword } = userInfo;
+
   const handleOnChangeText = (value, fieldName) => {
-    setUserInfo({...userInfo, [fieldName]: value});
-  }
+    setUserInfo({ ...userInfo, [fieldName]: value });
+  };
 
   const media = useMedia();
 
+  // reset form
+  function resetForm() {
+    setUserInfo({
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
+  };
+  // form validation
   const isvalidForm = () => {
     // We will accept only if all the fields have value
     if (!isValidFieldObject(userInfo)) {
@@ -58,41 +75,28 @@ export default function RegisterScreen({ navigation }) {
     if (password !== confirmPassword) {
       return updateError("password does not match", setError);
     }
-    return true
+    return true;
   };
-  
   const submitForm = async () => {
     if (isvalidForm()) {
-      const res = await client.post('/signup', {
-        ...userInfo
-      } )
-      console.log(res.data);
+      setLoginPending(true);
+      const res = await signUp({...userInfo});
+      const { success, message } = res.data;
+      if (success) {
+        alert(message);
+        // empty fields
+        resetForm()
+        setLoginPending(false);
+        navigation.navigate("Login");
+      } else {
+        alert(message);
+        // empty fields
+        resetForm()
+        setLoginPending(false);
+      }
     }
-
-    // fetchApi();
   };
-  // const fetchApi = async () => {
-  //   const formData = {
-  //     firstName,
-  //     lastName,
-  //     email,
-  //     password,
-  //     confirmPassword,
-  //   };
-  //   console.log(formData);
-  //   try {
-  //     await axios
-  //       .post("http://192.168.1.3:3001/signup", formData)
-  //       .then(function (response) {
-  //         console.log(response);
-  //       })
-  //       .catch(function (error) {
-  //         console.log(error);
-  //       });
-  //   } catch (error) {
-  //     console.log(error.message);
-  //   }
-  // };
+
   return (
     <>
       <View
@@ -122,9 +126,9 @@ export default function RegisterScreen({ navigation }) {
             title="Sign up"
           />
         </View>
-        {!isValidFieldObject(userInfo) ? 
-          <Text style={styles.errorMessage}>{error}</Text> : null
-        }
+        {/* { success.false ? (
+          <Text style={styles.errorMessage}>{message}</Text>
+        ) : null} */}
         <ScrollView>
           <View>
             <FormControl
@@ -144,49 +148,54 @@ export default function RegisterScreen({ navigation }) {
                 type={"text"}
                 placeholder={"First Name"}
                 focus={null}
-                error= {!firstName.trim() || firstName.length < 3 ? error : null}
+                error={!firstName.trim() || firstName.length < 3 ? error : null}
                 value={firstName}
-                onChangeText={(value) => handleOnChangeText(value, 'firstName')}
+                onChangeText={(value) => handleOnChangeText(value, "firstName")}
               />
               <FormInput
                 inputLabel={"Last Name"}
                 type={"text"}
                 placeholder={"Last Name"}
                 focus={null}
-                error= {!lastName.trim() || lastName.length < 3 ? error : null}
+                error={!lastName.trim() || lastName.length < 3 ? error : null}
                 value={lastName}
-                onChangeText={(value) => handleOnChangeText(value, 'lastName')}
+                onChangeText={(value) => handleOnChangeText(value, "lastName")}
               />
               <FormInput
                 inputLabel={"Email"}
                 type={"text"}
                 placeholder={"Email"}
                 autoCapitalize="none"
-                error= {!isvalidEmail(email) ? error : null}
+                error={!isvalidEmail(email) ? error : null}
                 focus={null}
                 value={email}
-                onChangeText={(value) => handleOnChangeText(value, 'email')}
+                onChangeText={(value) => handleOnChangeText(value, "email")}
               />
               <FormInput
                 inputLabel={"Password"}
                 type={"password"}
                 placeholder={"Password"}
                 autoCapitalize="none"
-                error= {!password.trim() || password.length < 8 ? error : null}
+                error={!password.trim() || password.length < 8 ? error : null}
                 focus={null}
                 value={password}
-                onChangeText={(value) => handleOnChangeText(value, 'password')}
+                onChangeText={(value) => handleOnChangeText(value, "password")}
               />
               <FormInput
                 inputLabel={"Confirm Password"}
                 type={"password"}
                 placeholder={"Confirm Password"}
                 autoCapitalize="none"
-                error= {password !== confirmPassword ? error : null}
+                error={password !== confirmPassword ? error : null}
                 focus={null}
                 value={confirmPassword}
-                onChangeText={(value) => handleOnChangeText(value, 'confirmPassword')}
+                onChangeText={(value) =>
+                  handleOnChangeText(value, "confirmPassword")
+                }
               />
+              {/* Loading Screen */}
+              {loginPending ? <LoadingScreen /> : null}
+              {/* submit button */}
               <FormSubmitButton
                 title={"Sign Up"}
                 onPress={() => submitForm()}
@@ -212,8 +221,8 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   errorMessage: {
-    textAlign: 'center',
-    color: 'red',
+    textAlign: "center",
+    color: "red",
     fontSize: 13,
     marginBottom: 10,
   },

@@ -10,16 +10,19 @@ import { drawerMenu } from "../components/Constants";
 import Colors from "../components/Colors";
 import Icon from "../components/Icons";
 import { useLogin } from "../components/context/LoginProvider";
+import { signOut } from "../components/api/user";
 
 function CustomDrawerContent({ navigation, progress, ...rest }) {
-  const { setIsLoggedIn, profile } = useLogin();
+  const { setIsLoggedIn, profile, setLoginPending } = useLogin();
   const [menuIndex, setMenuIndex] = useState(-1);
 
   const { firstName, lastName, email, avatar } = profile;
-    console.log("avatar",avatar)
+  // console.log("avatar",avatar)
   const handleSubMenuClick = (subMenu) => {
     navigation.navigate(subMenu.label);
   };
+
+  const picture = "https://images.unsplash.com/photo-1682695794947-17061dc284dd?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
   return (
     <>
@@ -36,18 +39,16 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
           }}
         >
           <View style={{ width: 150 }}>
-            <Text style={{fontSize: 16, fontWeight: '500'}}>{firstName + " " + lastName}</Text>
-            <Text style={{fontSize: 10}}>{email}</Text>
+            <Text style={{ fontSize: 16, fontWeight: "500" }}>
+              {firstName + " " + lastName}
+            </Text>
+            <Text style={{ fontSize: 10 }}>{email}</Text>
           </View>
           <Image
-            source={{
-              uri:
-                avatar ||
-                "https://images.unsplash.com/photo-1682695794947-17061dc284dd?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            }}
-            style={{ width: 50, height: 50, borderRadius: 30 }}
+            source={{uri: avatar || picture}}
+            style={{ width: 50, height: 50, borderRadius: 50 }}
           />
-        </View>
+        </View> 
         {/* Drawer menu with subMenu Section */}
         {drawerMenu.map((menu, index) => {
           return (
@@ -109,11 +110,18 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
           position: "absolute",
           bottom: 50,
           right: 0,
-          left: 25,
+          left: 0,
           padding: 20,
           backgroundColor: "#f1f1f1",
         }}
-        onPress={() => setIsLoggedIn(false)}
+        onPress={async () => {
+          setLoginPending(true);
+          const isLoggedOut = await signOut();
+          if (isLoggedOut) {
+            setIsLoggedIn(false);
+          }
+          setLoginPending(false);
+        }}
       >
         <Text style={{ fontSize: 16, fontWeight: "800" }}>Log out</Text>
       </Pressable>
@@ -123,11 +131,6 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
 export default CustomDrawerContent;
 
 const styles = StyleSheet.create({
-  // menu: {
-  //     marginHorizontal: 16 / 1.7,
-  //     marginVertical: 16 / 2,
-  //     // borderRadius: 5,
-  // },
   menu: {
     paddingHorizontal: 16 / 1.5,
     paddingVertical: 16 / 2,

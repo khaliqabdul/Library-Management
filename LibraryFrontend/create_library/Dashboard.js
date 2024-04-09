@@ -3,7 +3,7 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import { useWindowDimensions, StyleSheet } from 'react-native';
 
 import CustomDrawerContent from "./CustomDrawerContent";
-import AddReader from "../components/AddReader";
+import AddMember from "../components/AddMembers";
 import Colors from "../components/Colors";
 import ImageUpload from '../components/ImageUpload';
 
@@ -63,8 +63,8 @@ export default function Dashboard() {
             >
                 <Drawer.Screen name='HomeScreen' component={ImageUpload} />
                 <Drawer.Screen name='Notifications' component={NotificationsScreen}/>
-                <Drawer.Screen name='Add Reader Screen' component={AddReader}/>
-                <Drawer.Screen name='Article' component={Article}/>
+                <Drawer.Screen name='Add Member Screen' component={AddMember}/>
+                <Drawer.Screen name='MemberList' component={Article}/>
             </Drawer.Navigator>
         </>
     )

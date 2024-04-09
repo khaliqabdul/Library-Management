@@ -6,7 +6,6 @@ import {
   EyeIcon,
   EyeOffIcon,
   InputField,
-  SelectSectionHeaderText,
   HStack,
   Text,
 } from "@gluestack-ui/themed";
@@ -15,7 +14,7 @@ import { StyleSheet, } from "react-native";
 
 export default function FormInput(props) {
   const { 
-    inputLabel,
+    inputLabel, keyboardType,
     rightInputLabel,
     value,
     error,
@@ -46,6 +45,7 @@ export default function FormInput(props) {
           placeholder={placeholder}
           onFocus={focus}
           value={value}
+          keyboardType={keyboardType}
         />
         {type == "password" ? (
           <InputSlot pr="$4" onPress={handleState}>

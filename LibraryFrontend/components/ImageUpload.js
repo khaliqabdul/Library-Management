@@ -1,21 +1,14 @@
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import client from "./api/client";
 import { useLogin } from "./context/LoginProvider";
+import ProgressScreen from "./loginSignup/ProgressScreen";
 
 export default function ImageUpload() {
-  const [profileImage, setProfileImage] = useState("");
-  const { isToken } = useLogin();
-  // console.log("profileImage", profileImage)
+  const [profileImage, setProfileImage] = useState();
+  const [progress, setProgress] = useState(0);
+  const { isToken, setProfile } = useLogin();
 
   const openImageLibrary = async () => {
     const response = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -27,25 +20,21 @@ export default function ImageUpload() {
       const image = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        // aspect: [4, 3],
-        // quality: 1,
       });
+      // console.log(image)
       if (!image.canceled) {
-        setProfileImage(image.assets[0].uri);
-        // console.log(image.assets[0].uri)
+        const data = {
+          uri: image.assets[0].uri,
+          name: new Date() + "_profile",
+          type: `image/jpg`,
+        };
+        setProfileImage(data);
       }
     }
   };
   const uploadProfileImage = async () => {
     const imageData = new FormData();
-    imageData.append("profile", {
-      name: new Date() + "_profile",
-      uri: profileImage,
-      type: "image/jpg  ",
-    });
-    var options = { content: imageData };
-    // console.log(options);
-
+    imageData.append("profile", profileImage);
     try {
       const res = await client.post("/upload-profile", imageData, {
         headers: {
@@ -53,20 +42,29 @@ export default function ImageUpload() {
           "Content-Type": "multipart/form-data",
           authorization: `${isToken}`,
         },
-        onUploadProgress: ({loaded, total}) => console.log(loaded / total)
+        withCredentials: false,
+        onUploadProgress: ({ loaded, total }) => setProgress(loaded / total),
       });
-      console.log("res.data",res.data);
+      console.log(res.data);
+      if (res.data.success == false) {
+        alert(res.data.message);
+      } else {
+        alert(res.data.message);
+        setProfile(res.data.user);
+      }
     } catch (error) {
-      console.log("err",error.message);
+      alert(error.message);
+      console.log("err", error.message);
     }
   };
   return (
     <View style={styles.container}>
+      {progress ? <ProgressScreen process={progress} /> : null}
       <View style={styles.innerContainer}>
         <Pressable onPress={openImageLibrary} style={styles.uploadBtnContainer}>
           {profileImage ? (
             <Image
-              source={{ uri: profileImage }}
+              source={{ uri: profileImage.uri }}
               style={{ width: "100%", height: "100%" }}
             />
           ) : (

@@ -2,12 +2,13 @@ import React from "react";
 import { StyleSheet, View, Text, } from "react-native";
 // import { View, Text } from "@gluestack-ui/themed";
 
-const FormHeader = ({leftHeading, rightHeading, subHeading}) => {
+const FormHeader = (props) => {
+  const { leftHeading, rightHeading, subHeading, style } = props
   return (
     <>
       <View style={styles.container}>
-        <Text style={styles.heading}>{leftHeading}</Text>
-        <Text style={styles.heading}>{rightHeading}</Text>
+        <Text style={[styles.heading, style]}>{leftHeading}</Text>
+        <Text style={[styles.heading, style]}>{rightHeading}</Text>
       </View>
       <Text style={styles.subHeading}>{subHeading}</Text>
     </>
@@ -20,7 +21,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-       
   },
   heading: {
     fontSize: 30,

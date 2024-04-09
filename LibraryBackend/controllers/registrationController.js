@@ -2,17 +2,22 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { jwtKey } = require("../keys");
 const bcrypt = require("bcrypt");
-const sharp = require("sharp");
+const cloudinary = require("../cloudinary/imageUpload");
 
 const User = mongoose.model("Registration");
 
 // Registration or signup
 const signup = async (req, res) => {
   const { firstName, lastName, email, password, confirmPassword } = req.body;
-  // const isNewUser = await User.isThisEmailInUse(email);
-  // if(!isNewUser) {
-  //   return res.json({success: false, message: 'This email is already in use!'})
-  // }
+
+  const isAlreadyHasEmail = await User.findOne({ email });
+  if (!isAlreadyHasEmail || !isAlreadyHasEmail.email) {
+  } else {
+    return res.json({
+      success: false,
+      message: "This email is already in use! try again",
+    });
+  }
   try {
     const user = new User({
       firstName,
@@ -22,77 +27,143 @@ const signup = async (req, res) => {
       confirmPassword,
     });
 
-    const token = jwt.sign({ userId: user._id }, jwtKey);
-    await user.save();
-    // get token
-    // res.send({ token: token });
-    res.json({success: true, token: token, user})
+    const token = jwt.sign({ userId: user._id }, jwtKey, {
+      expiresIn: "1d",
+    });
+    await user.save({ tokens: token });
+    // await User.findByIdAndUpdate(user._id, token);
+    const userInfo = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      avatar: user.avatar ? user.avatar : "",
+    };
+    // get token and user info
+    res.json({
+      success: true,
+      token,
+      user: userInfo,
+      message: "User Registered Successfully!",
+    });
   } catch (error) {
     console.log(error.message);
     return res.status(422).send(error.message);
   }
 };
 // signin
-const signin = async (req, res) => {
-  // res.setHeader("Access-Control-Allow-Origin", "*")
-  // res.setHeader("Access-Control-Allow-Credentials", "true");
-  // res.setHeader("Access-Control-Max-Age", "1800");
-  // res.setHeader("Access-Control-Allow-Headers", "content-type");
-  // res.setHeader( "Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, PATCH, OPTIONS" );
+const signIn = async (req, res) => {
   try {
-    console.log("login data", req.body);
+    // console.log("login data", req.body);
     const { email, password } = req.body;
     if (!email || !password) {
       return res.json({
         success: false,
-        message: "1Must provide email or password",
+        message: "Must provide email or password",
       });
-      // res.status(422).send({error: '1 Must provide email or password'});
     }
+
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.json({
         success: false,
-        message: "Must provide email or password",
+        message: "Invalid email or password! Please try again",
       });
-      // res.status(422).send({error: 'Must provide email or password'});
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(422).send({ error: "Must provide email or password" });
+      return res.json({
+        success: false,
+        message: "Invalid email or password! Please try again",
+      });
+      // return res.status(422).send({ error: "Must provide email or password" });
     }
     //
     const token = jwt.sign({ userId: user._id }, jwtKey, {
-      expiresIn: 60 * 60,
+      expiresIn: "1d",
     });
-    res.json({ success: true, user, token });
-    // res.send({token, user})
+
+    let oldTokens = user.tokens || [];
+    if (oldTokens.length) {
+      oldTokens = oldTokens.filter((t) => {
+        const timeDiffInSeconds = (Date.now() - parseInt(t.signedAt)) / 1000;
+        if (timeDiffInSeconds < 86400) {
+          return t;
+        }
+      });
+    }
+
+    await User.findByIdAndUpdate(user._id, {
+      tokens: [...oldTokens, { token, signedAt: Date.now().toString() }],
+    });
+
+    const userInfo = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      avatar: user.avatar ? user.avatar : "",
+    };
+
+    res.json({ success: true, user: userInfo, token });
   } catch (error) {
     console.log(error.message);
     return res.send(error.message);
   }
 };
-// upload profile image
-const profileImage = async (req, res) => {
-  const { user } = req;
-    if (!user)
-      return res
-        .status(401)
-        .json({ success: false, message: "unauthorize access!" });
-
-    console.log("req.file", req.file)
+// sign out
+const signOut = async (req, res) => {
+  // console.log("signout",req.headers)
   try {
-    const profileBuffer = req.file.buffer;
-    const imageInfo = await sharp(profileBuffer).metadata();
-    const { width, height } = imageInfo;
-    const finalProfileImage = await sharp(profileBuffer)
-      .resize(Math.round(width * 0.5), Math.round(height * 0.5))
-      .toBuffer();
-    await User.findByIdAndUpdate(user._id, { avatar: finalProfileImage });
+    if (req.headers && req.headers.authorization) {
+      const clientToken = req.headers.authorization.split(" ")[0];
+
+      if (!clientToken) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Authorization Failed!" });
+      }
+      const databaseTokens = req.user.tokens;
+
+      const filteredToken = databaseTokens.filter(
+        (t) => t.token !== clientToken
+      );
+      await User.findByIdAndUpdate(req.user._id, { tokens: filteredToken });
+      // console.log(req.user.tokens);
+      res.json({ success: true, message: "Signed Out Successfully!" });
+    }
+  } catch (error) {
+    console.log("signed out error", error.message);
+  }
+};
+
+// upload profile image
+const uploadProfileImage = async (req, res) => {
+  const { user } = req;
+  console.log(req.file)
+  if (!user)
+    return res
+      .status(401)
+      .json({ success: false, message: "unauthorize access!" });
+  try {
+    
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      public_id: `${user._id}_profile`,
+      width: 500,
+      height: 500,
+      crop: "fill",
+    });
+    const response = await User.findByIdAndUpdate(user._id, {
+      avatar: result.url,
+    });
+    // console.log(response.avatar)
     res
       .status(201)
-      .json({ success: true, message: "Your profile image has updated" });
+      .json({
+        success: true,
+        message: "Your profile image has updated",
+        user: response,
+      });
   } catch (error) {
     res
       .status(500)
@@ -100,9 +171,27 @@ const profileImage = async (req, res) => {
     console.log("Error while uploading profile image", error.message);
   }
 };
+// send profile to client
+const sendProfileToClient = (req, res) => {
+  // req.user is coming from authToken method
+  if (!req.user) {
+    return res.json({ success: false, message: "unathorided access!" });
+  }
+  res.json({
+    success: true,
+    profile: {
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      email: req.user.email,
+      avatar: req.user.avatar ? req.user.avatar : "",
+    },
+  });
+};
 
 module.exports = {
   signup,
-  signin,
-  profileImage,
+  signIn,
+  signOut,
+  uploadProfileImage,
+  sendProfileToClient,
 };

@@ -9,4 +9,4 @@ const readerSchema = new mongoose.Schema({
     isBlackListed: {type: Boolean}
 });
 
-mongoose.model('readers', readerSchema);
+module.exports = mongoose.model("Reader", readerSchema)

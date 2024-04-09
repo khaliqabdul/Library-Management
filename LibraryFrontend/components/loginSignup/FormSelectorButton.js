@@ -1,6 +1,5 @@
 import React from "react";
 import { StyleSheet, View, Text, TouchableWithoutFeedback } from "react-native";
-// import { View, Text } from "@gluestack-ui/themed";
 
 const FormSelectorButton = ({title, backgroundColor, style, onPress}) => {
   return (

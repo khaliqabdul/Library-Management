@@ -12,11 +12,10 @@ import {
 import { StyleSheet } from "react-native";
 import { useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLogin } from "../components/context/LoginProvider";
 import FormHeader from "../components/loginSignup/ٖFormHeader";
 import FormInput from "../components/loginSignup/FormInput";
-import client from "../components/api/client";
+import LoadingScreen from "../components/loginSignup/LoadingScreen";
 
 import FormSelectorButton from "../components/loginSignup/FormSelectorButton";
 import FormSubmitButton from "../components/loginSignup/FormSubmitButton";
@@ -25,11 +24,13 @@ import {
   isvalidEmail,
   updateError,
 } from "../components/utils/formValidationMethods";
+import { signIn } from "../components/api/user";
 
 const Stack = createNativeStackNavigator();
 
 export default function LoginScreen({ navigation }) {
-  const { setIsLoggedIn, setProfile } = useLogin();
+  const { loginPending, setLoginPending, setIsLoggedIn, setProfile } =
+    useLogin();
 
   const [error, setError] = useState("");
   const [inputInfo, setInputInfo] = useState({
@@ -57,24 +58,23 @@ export default function LoginScreen({ navigation }) {
     }
     return true;
   };
-
   const sendRequestToLogin = async () => {
     if (isValidForm()) {
-      try {
-        const res = await client.post("/signin", { ...inputInfo });
-        if (res.data.token && res.data.success) {
-          setProfile(res.data.user)
-          setInputInfo({email: '', password: ''})
-          await AsyncStorage.setItem("token", res.data.token);
-          setIsLoggedIn(true);
-          console.log("data", res.data)
-        }
-      } catch (error) {
-        console.log("Error", error.message);
+      setLoginPending(true);
+      const res = await signIn(email, password);
+      // console.log(res.data)
+      if (!res.data.success) {
+        alert(res.data.message);
+        setLoginPending(false);
+        setInputInfo({ email: "", password: "" });
+      } else {
+        setProfile(res.data.user);
+        setInputInfo({ email: "", password: "" });
+        setIsLoggedIn(true);
+        setLoginPending(false);
       }
     }
   };
- 
   const media = useMedia();
   return (
     <>
@@ -105,6 +105,7 @@ export default function LoginScreen({ navigation }) {
             onPress={() => navigation.navigate("Register")}
           />
         </View>
+        {/* <ProgressScreen/> */}
         <ScrollView>
           <FormControl
             p="$5"
@@ -149,6 +150,8 @@ export default function LoginScreen({ navigation }) {
                 value={password}
                 onChangeText={(value) => onChangeTextHandler(value, "password")}
               />
+              {/* Loading screen */}
+              {loginPending ? <LoadingScreen /> : null}
               {/* submit Button */}
               <FormSubmitButton
                 title={"Login"}
