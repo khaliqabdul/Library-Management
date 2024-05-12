@@ -3,6 +3,10 @@ const bcrypt = require('bcrypt');
 
 // Defining Schema
 const registrationSchema = new mongoose.Schema({
+    reader_id: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Reader'
+    }],
     firstName: {type: String, required: true, trim: true},
     lastName: {type: String, required: true},
     email: {type: String, unique: true, required: true, trim: true},

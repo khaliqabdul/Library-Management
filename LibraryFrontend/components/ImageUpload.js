@@ -1,11 +1,11 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import client from "./api/client";
 import { useLogin } from "./context/LoginProvider";
 import ProgressScreen from "./loginSignup/ProgressScreen";
 
-export default function ImageUpload() {
+export default function ImageUpload({ navigation }) {
   const [profileImage, setProfileImage] = useState();
   const [progress, setProgress] = useState(0);
   const { isToken, setProfile } = useLogin();
@@ -35,6 +35,7 @@ export default function ImageUpload() {
   const uploadProfileImage = async () => {
     const imageData = new FormData();
     imageData.append("profile", profileImage);
+    
     try {
       const res = await client.post("/upload-profile", imageData, {
         headers: {
@@ -45,18 +46,22 @@ export default function ImageUpload() {
         withCredentials: false,
         onUploadProgress: ({ loaded, total }) => setProgress(loaded / total),
       });
-      console.log(res.data);
+      // console.log(res.data);
       if (res.data.success == false) {
         alert(res.data.message);
       } else {
         alert(res.data.message);
         setProfile(res.data.user);
+        setProfileImage("");
+        setProgress(0);
+        navigation.openDrawer();
       }
     } catch (error) {
       alert(error.message);
       console.log("err", error.message);
     }
   };
+
   return (
     <View style={styles.container}>
       {progress ? <ProgressScreen process={progress} /> : null}

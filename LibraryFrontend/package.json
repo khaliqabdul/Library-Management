@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@expo/webpack-config": "^19.0.0",
+    "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-native-fontawesome": "^0.3.0",
     "@gluestack-style/react": "^1.0.31",
@@ -22,6 +23,7 @@
     "@react-navigation/native-stack": "^6.9.17",
     "axios": "^1.6.5",
     "expo": "~49.0.15",
+    "expo-image-picker": "~14.3.2",
     "expo-status-bar": "~1.6.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -34,7 +36,7 @@
     "react-native-svg": "13.9.0",
     "react-native-tab-view": "^3.5.2",
     "react-native-web": "~0.19.6",
-    "expo-image-picker": "~14.3.2"
+    "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

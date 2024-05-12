@@ -75,7 +75,7 @@ export default function LoginScreen({ navigation }) {
       }
     }
   };
-  const media = useMedia();
+  const media = useMedia(); 
   return (
     <>
       <View

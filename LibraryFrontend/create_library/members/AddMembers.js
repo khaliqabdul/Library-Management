@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FormControl,
   View,
@@ -8,17 +8,21 @@ import {
   useMedia,
 } from "@gluestack-ui/themed";
 import { StyleSheet } from "react-native";
-import FormInput from "./loginSignup/FormInput";
-import FormSubmitButton from "./loginSignup/FormSubmitButton";
-import FormHeader from "./loginSignup/ٖFormHeader";
-import FormTextarea from "./loginSignup/FormTextarea";
+import FormInput from "../../components/loginSignup/FormInput";
+import FormSubmitButton from "../../components/loginSignup/FormSubmitButton";
+import FormHeader from "../../components/loginSignup/ٖFormHeader";
+import FormTextarea from "../../components/loginSignup/FormTextarea";
 
-import client from "./api/client";
-import { useLogin } from "./context/LoginProvider";
-import { isValidFieldObject, updateError } from "./utils/formValidationMethods";
+import client from "../../components/api/client";
+import { useLogin } from "../../components/context/LoginProvider";
+import {
+  isValidFieldObject,
+  updateError,
+} from "../../components/utils/formValidationMethods";
+import socketServices from "../../components/utils/socketService";
 
 export default function AddMember() {
-  const { isLoggedin } = useLogin();
+  const { isLoggedin, profile } = useLogin();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [inputInfo, setInputInfo] = useState({
@@ -28,11 +32,17 @@ export default function AddMember() {
     address: "",
   });
   const { name, age, gender, address } = inputInfo;
+  const registration_id = profile.id;
+
+  useEffect(() => {
+    socketServices.iniliazeSocket();
+  }, []);
 
   const onChangeTextHandler = (value, fieldName) => {
     setInputInfo({ ...inputInfo, [fieldName]: value });
   };
 
+  // console.log("id", registration_id);
   const media = useMedia();
   // reset form
   function resetForm() {
@@ -72,12 +82,20 @@ export default function AddMember() {
     if (isvalidForm()) {
       setIsLoading(true);
       const data = {
-        member: { name, age, gender, address, isBlackListed: false },
+        member: {
+          registration_id,
+          name,
+          age,
+          gender,
+          address,
+          isBlackListed: false,
+        },
       };
       if (isLoggedin) {
         await client
           .post(`/reader`, data.member)
           .then((res) => {
+            socketServices.emit("add_member", data.member)
             resetForm();
             alert(res.data.message);
           })

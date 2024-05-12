@@ -2,13 +2,14 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 const LoginContext = createContext();
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import client from "../api/client";
+import socketServices from "../utils/socketService";
 
 const LoginProvider = ({ children }) => {
   const [isLoggedin, setIsLoggedIn] = useState(false);
   const [profile, setProfile] = useState({});
   const [isToken, setIsToken] = useState(null);
   const [loginPending, setLoginPending] = useState(false);
-
+  // console.log("profile....", profile)
   const fetchUser = async () => {
     setLoginPending(true);
     const token = await AsyncStorage.getItem("token");
@@ -37,6 +38,7 @@ const LoginProvider = ({ children }) => {
   useEffect(() => {
     fetchUser();
   }, []);
+
   return (
     <LoginContext.Provider
       value={{

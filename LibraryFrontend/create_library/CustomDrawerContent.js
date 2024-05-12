@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, View, Pressable, HStack } from "@gluestack-ui/themed";
 import { LayoutAnimation, StyleSheet, Image, Text } from "react-native";
 import {
@@ -11,18 +11,35 @@ import Colors from "../components/Colors";
 import Icon from "../components/Icons";
 import { useLogin } from "../components/context/LoginProvider";
 import { signOut } from "../components/api/user";
+import socketServices from "../components/utils/socketService";
 
 function CustomDrawerContent({ navigation, progress, ...rest }) {
+
   const { setIsLoggedIn, profile, setLoginPending } = useLogin();
   const [menuIndex, setMenuIndex] = useState(-1);
-
-  const { firstName, lastName, email, avatar } = profile;
+  const [updatedProfile, setUpdatedProfile] = useState({})
+  
+  const { firstName, lastName, email, avatar } = updatedProfile;
   // console.log("avatar",avatar)
   const handleSubMenuClick = (subMenu) => {
     navigation.navigate(subMenu.label);
   };
 
   const picture = "https://images.unsplash.com/photo-1682695794947-17061dc284dd?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+  
+  useEffect(() => {
+    socketServices.iniliazeSocket();
+  }, [])
+  
+  useEffect(() => {
+    socketServices.on("send_profile", (data) => {
+      setUpdatedProfile(data)
+    })
+  }, [updatedProfile])
+
+  useEffect(() => {
+    setUpdatedProfile(profile)
+  }, [profile])
 
   return (
     <>

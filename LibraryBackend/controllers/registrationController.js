@@ -6,6 +6,10 @@ const cloudinary = require("../cloudinary/imageUpload");
 
 const User = mongoose.model("Registration");
 
+global.io.on("connection", (socket) => {
+  console.log("socket connected in registration controllers!");
+});
+
 // Registration or signup
 const signup = async (req, res) => {
   const { firstName, lastName, email, password, confirmPassword } = req.body;
@@ -99,6 +103,7 @@ const signIn = async (req, res) => {
     });
 
     const userInfo = {
+      id: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
@@ -140,30 +145,34 @@ const signOut = async (req, res) => {
 // upload profile image
 const uploadProfileImage = async (req, res) => {
   const { user } = req;
-  console.log(req.file)
+  // console.log(req.file)
   if (!user)
     return res
       .status(401)
       .json({ success: false, message: "unauthorize access!" });
   try {
-    
     const result = await cloudinary.uploader.upload(req.file.path, {
       public_id: `${user._id}_profile`,
       width: 500,
       height: 500,
       crop: "fill",
     });
-    const response = await User.findByIdAndUpdate(user._id, {
-      avatar: result.url,
+    const response = await User.findByIdAndUpdate(
+      user._id,
+      {
+        avatar: result.url,
+      },
+      { new: true }
+    );
+    // emit data through socket and received in customDrawerContent.js
+    io.emit("send_profile", response);
+
+    // console.log(response)
+    res.status(201).json({
+      success: true,
+      message: "Your profile image has updated",
+      user: response,
     });
-    // console.log(response.avatar)
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Your profile image has updated",
-        user: response,
-      });
   } catch (error) {
     res
       .status(500)
@@ -171,15 +180,18 @@ const uploadProfileImage = async (req, res) => {
     console.log("Error while uploading profile image", error.message);
   }
 };
+
 // send profile to client
 const sendProfileToClient = (req, res) => {
   // req.user is coming from authToken method
   if (!req.user) {
     return res.json({ success: false, message: "unathorided access!" });
   }
+
   res.json({
     success: true,
     profile: {
+      id: req.user._id,
       firstName: req.user.firstName,
       lastName: req.user.lastName,
       email: req.user.email,

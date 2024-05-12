@@ -10,6 +10,24 @@ import Colors from "./Colors";
 
 export const drawerMenu = [
   {
+    title: "Books",
+    bg: Colors.skyBlue,
+    icon1: faArrowAltCircleRight,
+    icon2: faArrowAltCircleDown,
+    menuList: [
+      {
+        title: "Books List",
+        label: "BooksList",
+        icon: faBookAtlas,
+      },
+      {
+        title: "Notifications",
+        label: "Notifications",
+        icon: faRegistered,
+      },
+    ],
+  },
+  {
     title: "Home",
     bg: Colors.skyBlue,
     icon1: faArrowAltCircleRight,
