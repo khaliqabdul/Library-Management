@@ -2,14 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 const LoginContext = createContext();
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import client from "../api/client";
-import socketServices from "../utils/socketService";
+// import socketServices from "../utils/socketService";
 
 const LoginProvider = ({ children }) => {
   const [isLoggedin, setIsLoggedIn] = useState(false);
   const [profile, setProfile] = useState({});
   const [isToken, setIsToken] = useState(null);
   const [loginPending, setLoginPending] = useState(false);
-  // console.log("profile....", profile)
+  const [showModal, setShowModal] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [memberData, setMemberData] = useState({})
+  // console.log("memberData....", memberData)
   const fetchUser = async () => {
     setLoginPending(true);
     const token = await AsyncStorage.getItem("token");
@@ -49,6 +52,12 @@ const LoginProvider = ({ children }) => {
         setProfile,
         loginPending,
         setLoginPending,
+        showModal,
+        setShowModal,
+        showAlert,
+        setShowAlert,
+        memberData,
+        setMemberData,
       }}
     >
       {children}

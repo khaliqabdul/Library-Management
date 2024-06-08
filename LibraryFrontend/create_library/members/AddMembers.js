@@ -95,6 +95,7 @@ export default function AddMember() {
         await client
           .post(`/reader`, data.member)
           .then((res) => {
+            // listen in readerController
             socketServices.emit("add_member", data.member)
             resetForm();
             alert(res.data.message);

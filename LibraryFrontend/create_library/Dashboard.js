@@ -9,6 +9,7 @@ import ImageUpload from "../components/ImageUpload";
 import MembersList from "./members/MembersList";
 import Chat from "./chat/Chat";
 import BooksList from "./books/BooksList";
+import ModalComponent from "../components/popup-menu/ModalComponent";
 
 function HomeScreen({ navigation }) {
   return (
@@ -56,7 +57,7 @@ export default function Dashboard() {
         }}
       >
         <Drawer.Screen name="HomeScreen" component={ImageUpload} />
-        <Drawer.Screen name="Notifications" component={Chat} />
+        <Drawer.Screen name="Notifications" component={ModalComponent} />
         <Drawer.Screen name="BooksList" component={BooksList} />
         <Drawer.Screen name="Add Member Screen" component={AddMember} />
         <Drawer.Screen name="MemberList" component={MembersList} />

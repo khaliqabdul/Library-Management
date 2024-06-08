@@ -1,14 +1,22 @@
-import { Text, FlatList, StyleSheet } from "react-native";
+import { Text, FlatList, StyleSheet, TextInput } from "react-native";
 import { Spinner, VStack, useMedia, View } from "@gluestack-ui/themed";
 import { useEffect, useState } from "react";
 import client from "../../components/api/client";
 import { useLogin } from "../../components/context/LoginProvider";
 import socketServices from "../../components/utils/socketService";
-import Card from "../../components/card/Card";
+import UserCard from "../../components/card/UserCard";
+import FormInput from "../../components/loginSignup/FormInput";
+import Icon from "../../components/Icons";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
+
+const searchTextHandler = (text) => {
+  console.log(text);
+};
 
 const MembersList = () => {
   const [memberData, setMemberData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState();
   const [error, setError] = useState(false);
   const { profile, isLoggedin } = useLogin();
   const registration_id = profile.id;
@@ -20,7 +28,11 @@ const MembersList = () => {
   }, []);
 
   useEffect(() => {
+    // listen from readerController
     socketServices.on("send_member", (data) => {
+      setMemberData(data);
+    });
+    socketServices.on("delete_member", (data) => {
       setMemberData(data);
     });
   }, [memberData]);
@@ -52,55 +64,60 @@ const MembersList = () => {
   const media = useMedia();
 
   return (
-    <View
-      width={media.lg ? "$1/3" : "$full"}
-      marginRight={"auto"}
-      marginLeft={"auto"}
-    >
+    <>
       {isLoading || error ? (
         <VStack mt="$5">
           <Text style={styles.errorMsg}>Unable to connect to the server.</Text>
           <Spinner size="large" />
         </VStack>
       ) : (
-        <FlatList
-          keyExtractor={(item) => item._id.toString()}
-          data={memberData}
-          renderItem={({ item }) => (
-            <Card>
-              <View>
-                <Text style={styles.textStyle}>{item.name}</Text>
-                <Text>{item.age} Years</Text>
-              </View>
-              <View
-                style={{
-                  borderTopWidth: 0.1,
-                  borderTopColor: "green",
-                  marginTop: 10,
-                }}
-              >
-                <Text style={{ fontSize: 16, paddingTop: 8, color: "#444444" }}>
-                  {item.address}
-                </Text>
-              </View>
-            </Card>
-          )}
-        />
+        <>
+          <FlatList
+            numColumns={media.lg ? 3 : 1}
+            ListHeaderComponent={
+              <>
+                {/* header */}
+                <Text style={styles.headerText}>Member's List</Text>
+                {/* search box */}
+                <View style={styles.inputContainer}>
+                  <View style={styles.iconContainer}>
+                    <Icon icon={faSearch} />
+                  </View>
+                  <FormInput
+                    placeholder="Search"
+                    marginHorizontal={20}
+                    value={search}
+                    onChangeText={(text) => searchTextHandler(text)}
+                  />
+                </View>
+                {/* <CustomMenu/> */}
+              </>
+            }
+            showsVerticalScrollIndicator={false}
+            // contentContainerStyle={{paddingBottom: 150}}
+            keyExtractor={(item) => item._id.toString()}
+            data={memberData}
+            renderItem={({ item }) => (
+              <UserCard
+                name={item.name}
+                gender={item.gender}
+                age={item.age}
+                address={item.address}
+                id={item._id}
+              />
+            )}
+          />
+        </>
       )}
-    </View>
+    </>
   );
 };
 const styles = StyleSheet.create({
-  itemContainer: {
-    backgroundColor: "lightgreen",
-    padding: 20,
-    margin: 8,
-    borderRadius: 4,
-  },
-  textStyle: {
-    fontWeight: "bold",
+  headerText: {
     fontSize: 20,
-    color: "black",
+    fontWeight: "600",
+    marginTop: 10,
+    marginLeft: 20,
     letterSpacing: 1,
   },
   errorMsg: {
@@ -108,6 +125,18 @@ const styles = StyleSheet.create({
     fontSize: 20,
     padding: 24,
     textAlign: "center",
+  },
+  inputContainer: {
+    marginTop: 5,
+  },
+  iconContainer: {
+    position: "absolute",
+    top: 35,
+    right: 30,
+    width: 30,
+    height: 30,
+    borderRadius: 50,
+    // backgroundColor: 'green'
   },
 });
 

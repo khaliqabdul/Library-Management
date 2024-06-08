@@ -5,6 +5,8 @@ import {
   faBookAtlas,
   faCubes,
   faRegistered,
+  faEllipsisVertical
+  
 } from "@fortawesome/free-solid-svg-icons";
 import Colors from "./Colors";
 

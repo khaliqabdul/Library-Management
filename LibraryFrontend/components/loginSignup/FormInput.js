@@ -20,7 +20,7 @@ export default function FormInput(props) {
     error,
     type,
     placeholder,
-    focus, } = props
+    focus,marginHorizontal } = props
     
   const [showPassword, setShowpassword] = useState(false);
   const handleState = () => {
@@ -38,7 +38,7 @@ export default function FormInput(props) {
         {/* <Text style={styles.errorMessage}>{error}</Text> */}
       </HStack>
       
-      <Input style={styles.input}>
+      <Input style={[styles.input, {marginHorizontal: marginHorizontal}]} >
         <InputField
           {...props}
           type={!showPassword ? type : null}
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: "#1b1b33",
-    borderRadius: 8,
+    borderRadius: 0,
     height: 35,
     fontSize: 16,
     paddingLeft: 5,

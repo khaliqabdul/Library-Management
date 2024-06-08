@@ -1,15 +1,16 @@
 const mongoose = require("mongoose");
 const Member = require("../models/readerModel");
 const User = mongoose.model("Registration");
-var ObjectId = require('mongodb').ObjectId; 
+var ObjectId = require("mongodb").ObjectId;
 
 global.io.on("connection", (socket) => {
   console.log("socket connected in reader controllers!");
 
-  // listen from add member
+  // listen from addMembers.js
   socket.on("add_member", async function (data) {
     var _id = new ObjectId(data.registration_id);
-    const user = await User.findById({_id}).populate("reader_id")
+    const user = await User.findById({ _id }).populate("reader_id");
+    // lesten in MembersList
     io.emit("send_member", user.reader_id);
   });
 });
@@ -49,7 +50,7 @@ const createNewReader = async (req, res) => {
     return res.status(422).send({ success: false, message: error.message });
   }
 };
-// get all members
+// get all readers
 const getAllReaders = async (req, res) => {
   const { id } = req.body;
   if (!id)
@@ -61,12 +62,41 @@ const getAllReaders = async (req, res) => {
       "reader_id"
     );
     const memberData = librarianData.reader_id;
+
     res.send({
       success: true,
       message: "Populated the members successfully!",
       memberData,
     });
+  } catch (error) {
+    return res.status(422).send({ success: false, message: error.message });
+  }
+};
+// delete reader
+const deleteReader = async (req, res) => {
+  try {
+    const data = req.body;
+    const { id } = data.memberId;
+    const registration_id = data.registration_id;
 
+    const memberDeleted = await Member.findByIdAndDelete(
+      { _id: id },
+      { new: true }
+    );
+    if (memberDeleted) {
+      const librarianData = await User.findById({
+        _id: registration_id,
+      }).populate("reader_id");
+      const memberData = librarianData.reader_id;
+
+      // lesten in MembersList
+      io.emit("delete_member", memberData);
+      
+      res.send({
+        success: true,
+        message: "member deleted successfully!",
+      });
+    }
   } catch (error) {
     return res.status(422).send({ success: false, message: error.message });
   }
@@ -75,4 +105,5 @@ const getAllReaders = async (req, res) => {
 module.exports = {
   createNewReader,
   getAllReaders,
+  deleteReader,
 };

@@ -1,9 +1,10 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { StyleSheet } from "react-native";
 
 
-const Icon = ({icon}) => {
+const Icon = ({icon, color}) => {
     return(
-        <FontAwesomeIcon icon={icon}/>
+        <FontAwesomeIcon style={{color: color}} icon={icon}/>
     )
 }
 export default Icon

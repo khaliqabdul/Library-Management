@@ -34,7 +34,7 @@ const BooksList = () => {
   async function getBooks() {
     try {
       
-      const {data: books} = await axios.get("http://192.168.1.2:3001/books")
+      const {data: books} = await axios.get("http://192.168.1.3:3001/books")
       setBooks(books);
     } catch (err) {
       setError(true);
