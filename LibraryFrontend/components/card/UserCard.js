@@ -9,7 +9,7 @@ import { useLogin } from "../context/LoginProvider";
 import AlertComponent from "../popup-menu/AlertComponent";
 
 // user card starts
-const UserCard = ({ name, age, gender, address, id }) => {
+const UserCard = ({ name, age, gender, phone, CNIC_No, address, id }) => {
   const { setShowModal, setMemberData } = useLogin();
   
   const alertMessage = {
@@ -28,7 +28,7 @@ const UserCard = ({ name, age, gender, address, id }) => {
       <View style={styles.menuWrapper}>
         {/* image */}
         <Image
-          source={require("../../assets/images/am.jpg")}
+          source={require("../../assets/images/userAvatar.png")}
           style={styles.coverImage}
         />
         {/* threedot menu */}
@@ -48,6 +48,8 @@ const UserCard = ({ name, age, gender, address, id }) => {
         <Text style={styles.title}>{name}</Text>
         <Text style={styles.text}>{gender}</Text>
         <Text style={styles.text}>{age} Years</Text>
+        <Text style={styles.text}>+{phone}</Text>
+        <Text style={styles.text}>{CNIC_No}</Text>
         <Text style={styles.text}>{address}</Text>
       </View>
       <AlertComponent alertMessage={alertMessage}/>
@@ -60,6 +62,7 @@ export default UserCard;
 const styles = StyleSheet.create({
   cardContainer: {
     flex: 1,
+    height: "80%",
     marginHorizontal: 20,
     marginVertical: 10,
     elevation: 8,
@@ -74,7 +77,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    height: "50%",
+    height: "30%",
   },
   coverImage: {
     height: 55,

@@ -10,9 +10,12 @@ const LoginProvider = ({ children }) => {
   const [isToken, setIsToken] = useState(null);
   const [loginPending, setLoginPending] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showDateModal, setShowDateModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [memberData, setMemberData] = useState({})
-  // console.log("memberData....", memberData)
+  const [dropdownSelectedItem, setDropdownSelectedItem] = useState("Select")
+  const [dateOfBirth, setDateOfBirth] = useState();
+  
   const fetchUser = async () => {
     setLoginPending(true);
     const token = await AsyncStorage.getItem("token");
@@ -54,10 +57,16 @@ const LoginProvider = ({ children }) => {
         setLoginPending,
         showModal,
         setShowModal,
+        showDateModal,
+        setShowDateModal,
         showAlert,
         setShowAlert,
         memberData,
         setMemberData,
+        dropdownSelectedItem,
+        setDropdownSelectedItem,
+        dateOfBirth,
+        setDateOfBirth,
       }}
     >
       {children}

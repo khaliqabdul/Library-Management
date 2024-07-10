@@ -3,36 +3,61 @@ import {
   FormControl,
   View,
   VStack,
+  HStack,
   Spinner,
   ScrollView,
   useMedia,
+  Box,
 } from "@gluestack-ui/themed";
 import { StyleSheet } from "react-native";
+
 import FormInput from "../../components/loginSignup/FormInput";
 import FormSubmitButton from "../../components/loginSignup/FormSubmitButton";
 import FormHeader from "../../components/loginSignup/ٖFormHeader";
 import FormTextarea from "../../components/loginSignup/FormTextarea";
+import DatePickerComponent from "../../components/loginSignup/DatePickerComponent";
+import { genderData } from "../../components/popup-menu/data";
+import CustomDropdownComponent from "../../components/loginSignup/CustomDropdownComponent";
 
 import client from "../../components/api/client";
 import { useLogin } from "../../components/context/LoginProvider";
 import {
   isValidFieldObject,
   updateError,
+  isvalidCNIC,
+  isvalidMobileNo,
 } from "../../components/utils/formValidationMethods";
 import socketServices from "../../components/utils/socketService";
 
+const genders = genderData.map((item, index) => {
+  return `${item.gender}`;
+});
+
 export default function AddMember() {
-  const { isLoggedin, profile } = useLogin();
+  const { isLoggedin, profile, dropdownSelectedItem, dateOfBirth } = useLogin();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false); //used in mobile no
+  const pattern = new RegExp(/^\d{1,10}$/);
   const [inputInfo, setInputInfo] = useState({
     name: "",
-    age: "",
-    gender: "",
+    countryCode: "",
+    phoneNumber: "",
+    cnicNumber: "",
     address: "",
   });
-  const { name, age, gender, address } = inputInfo;
+  const { name, address, phoneNumber, countryCode, cnicNumber } = inputInfo;
   const registration_id = profile.id;
+  const gender = dropdownSelectedItem;
+  const birthDate = dateOfBirth;
+  
+  const getAge = (birthDate) => {
+    return Math.floor(
+      (new Date() - new Date(birthDate).getTime()) / 3.15576e10
+    );
+  };
+  const age = getAge(birthDate);
+  const mobileNumber = `+${countryCode}${phoneNumber}`;
 
   useEffect(() => {
     socketServices.iniliazeSocket();
@@ -40,16 +65,22 @@ export default function AddMember() {
 
   const onChangeTextHandler = (value, fieldName) => {
     setInputInfo({ ...inputInfo, [fieldName]: value });
+    if (!pattern.test(value)) {
+      setIsError(true);
+    } else {
+      setIsError(false);
+    }
   };
 
-  // console.log("id", registration_id);
   const media = useMedia();
   // reset form
   function resetForm() {
     setInputInfo({
       name: "",
-      age: "",
       gender: "",
+      countryCode: "",
+      phoneNumber: "",
+      cnicNumber: "",
       address: "",
     });
   }
@@ -57,19 +88,31 @@ export default function AddMember() {
   const isvalidForm = () => {
     // We will accept only if all the fields have value
     if (!isValidFieldObject(inputInfo)) {
-      return updateError("Required all fields", setError);
+      return updateError("Required", setError);
     }
-    // if valid name with 3 or more characters
+    // name validation
     if (!name.trim() || name.length < 3) {
       return updateError("invalid Name", setError);
     }
-    // if valid age with 2 or more characters
-    if (!age.trim() || age.length < 2) {
-      return updateError("invalid Name", setError);
+    // birthDate validation
+    if (!birthDate) {
+      return updateError("Empty Field", setError);
     }
     // gender validation
-    if (!gender.trim() || gender.length < 4) {
-      return updateError("gender is required", setError);
+    if ((gender == "Select")) {
+      return updateError("Empty Field", setError);
+    }
+    // country code validation
+    if (!countryCode.trim() || countryCode.length < 2) {
+      return updateError("invalid code", setError);
+    }
+    // mobile No validation
+    if (!isvalidMobileNo(phoneNumber)) {
+      return updateError("invalid No", setError);
+    }
+    // cnic validation
+    if (!isvalidCNIC(cnicNumber)) {
+      return updateError("invalid cnic!", setError);
     }
     // address validation
     if (!address.trim() || address.length < 10) {
@@ -77,7 +120,6 @@ export default function AddMember() {
     }
     return true;
   };
-
   async function sendRequestToAddNewReader() {
     if (isvalidForm()) {
       setIsLoading(true);
@@ -87,6 +129,9 @@ export default function AddMember() {
           name,
           age,
           gender,
+          birthDate,
+          mobileNumber,
+          cnicNumber,
           address,
           isBlackListed: false,
         },
@@ -96,7 +141,7 @@ export default function AddMember() {
           .post(`/reader`, data.member)
           .then((res) => {
             // listen in readerController
-            socketServices.emit("add_member", data.member)
+            socketServices.emit("add_member", data.member);
             resetForm();
             alert(res.data.message);
           })
@@ -110,7 +155,6 @@ export default function AddMember() {
       }
     }
   }
-
   return (
     <>
       <View
@@ -138,24 +182,69 @@ export default function AddMember() {
               onChangeText={(value) => onChangeTextHandler(value, "name")}
               error={!name.trim() || name.length < 3 ? error : null}
             />
-            {/* Age */}
-            <FormInput
-              inputLabel="Age"
-              placeholder="Age"
-              type="text"
-              keyboardType="numeric"
-              value={age}
-              onChangeText={(value) => onChangeTextHandler(value, "age")}
-              error={!age.trim() || age.length < 2 ? error : null}
+            {/* Date of Birth */}
+            <DatePickerComponent
+              inputLabel="Date of Birth"
+              error={!birthDate ? error : null}
             />
-            {/* Gender */}
-            <FormInput
+            {/* Gender dropdown */}
+            <CustomDropdownComponent
+              dropdownList={genders}
               inputLabel="Gender"
-              placeholder="Gender"
-              type="text"
-              value={gender}
-              onChangeText={(value) => onChangeTextHandler(value, "gender")}
-              error={!gender.trim() || gender.length < 4 ? error : null}
+              value={dropdownSelectedItem}
+              error={(gender == "Select" ? error : null)}
+            />
+            {/* Phone Number */}
+            <HStack space="md" reversed={false}>
+              <Box w="30%">
+                <FormInput
+                  inputLabel="Code"
+                  rightInputLabel=""
+                  placeholder="92"
+                  keyboardType="numeric"
+                  maxLength={5}
+                  value={countryCode}
+                  onChangeText={(value) =>
+                    onChangeTextHandler(value, "countryCode")
+                  }
+                  error={
+                    !countryCode.trim() || countryCode.length < 2 ? error : null
+                  }
+                />
+              </Box>
+              <Box w="65%">
+                <FormInput
+                  inputLabel="Mobile No."
+                  rightInputLabel={
+                    isError || mobileNumber.length < 13
+                      ? "Invalid No"
+                      : mobileNumber
+                  }
+                  placeholder="0000000000"
+                  keyboardType="numeric"
+                  maxLength={10}
+                  value={phoneNumber}
+                  onChangeText={(value) =>
+                    onChangeTextHandler(value, "phoneNumber")
+                  }
+                  error={!isvalidMobileNo(phoneNumber) ? error : null}
+                />
+              </Box>
+            </HStack>
+            {/* CNIC No */}
+            <FormInput
+              inputLabel="CNIC No."
+              rightInputLabel={
+                isError || cnicNumber.length < 15
+                  ? "Invalid pattern"
+                  : cnicNumber
+              }
+              placeholder="00000-0000000-0 (Follow the pattern)"
+              keyboardType="numeric"
+              maxLength={15}
+              value={cnicNumber}
+              onChangeText={(value) => onChangeTextHandler(value, "cnicNumber")}
+              error={!isvalidCNIC(cnicNumber) ? error : null}
             />
             {/* Address */}
             <FormTextarea

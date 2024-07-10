@@ -10,24 +10,34 @@ import {
   Text,
 } from "@gluestack-ui/themed";
 import { useState } from "react";
-import { StyleSheet, } from "react-native";
+import { StyleSheet } from "react-native";
+// import { useLogin } from "../context/LoginProvider";
 
 export default function FormInput(props) {
-  const { 
-    inputLabel, keyboardType,
+  const {
+    inputLabel,
+    keyboardType,
     rightInputLabel,
     value,
+    editable,
     error,
+    defaultValue,
     type,
     placeholder,
-    focus,marginHorizontal } = props
-    
+    focus,
+    marginHorizontal,
+    maxLength,
+  } = props;
+  // console.log(value)
   const [showPassword, setShowpassword] = useState(false);
+  // const { showModal, setShowDateModal } = useLogin();
+
   const handleState = () => {
     setShowpassword((showState) => {
       return !showState;
     });
   };
+
   return (
     <FormControl>
       <HStack>
@@ -37,8 +47,8 @@ export default function FormInput(props) {
         </Text>
         {/* <Text style={styles.errorMessage}>{error}</Text> */}
       </HStack>
-      
-      <Input style={[styles.input, {marginHorizontal: marginHorizontal}]} >
+
+      <Input style={[styles.input, { marginHorizontal: marginHorizontal }]}>
         <InputField
           {...props}
           type={!showPassword ? type : null}
@@ -46,6 +56,8 @@ export default function FormInput(props) {
           onFocus={focus}
           value={value}
           keyboardType={keyboardType}
+          editable={editable}
+          maxLength={maxLength}
         />
         {type == "password" ? (
           <InputSlot pr="$4" onPress={handleState}>
@@ -54,7 +66,9 @@ export default function FormInput(props) {
               color="#005DB4"
             />
           </InputSlot>
-        ) : null}
+        ) : (
+          null
+        )}
       </Input>
       <Text style={styles.errorMessage}>{error}</Text>
     </FormControl>
@@ -72,8 +86,8 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   errorMessage: {
-    textAlign: 'right',
-    color: 'red',
+    textAlign: "right",
+    color: "red",
     fontSize: 13,
     marginBottom: 10,
   },

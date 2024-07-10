@@ -1,6 +1,6 @@
 import { Text, FlatList, StyleSheet, TextInput } from "react-native";
 import { Spinner, VStack, useMedia, View } from "@gluestack-ui/themed";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import client from "../../components/api/client";
 import { useLogin } from "../../components/context/LoginProvider";
 import socketServices from "../../components/utils/socketService";
@@ -9,20 +9,29 @@ import FormInput from "../../components/loginSignup/FormInput";
 import Icon from "../../components/Icons";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 
-const searchTextHandler = (text) => {
-  console.log(text);
-};
-
 const MembersList = () => {
   const [memberData, setMemberData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [search, setSearch] = useState();
   const [error, setError] = useState(false);
+  const searchRef = useRef();
   const { profile, isLoggedin } = useLogin();
   const registration_id = profile.id;
   const data = {
     libr: { id: registration_id },
   };
+  console.log(memberData)
+  const searchTextHandler = (text) => {
+    if (text !== "") {
+      let tempData = memberData.filter((item) => {
+        return item.name.toLowerCase().indexOf(text.toLowerCase()) > -1;
+      });
+      setMemberData(tempData);
+    } else {
+      fetchData();
+    }
+    
+  };
+
   useEffect(() => {
     socketServices.iniliazeSocket();
   }, []);
@@ -86,7 +95,7 @@ const MembersList = () => {
                   <FormInput
                     placeholder="Search"
                     marginHorizontal={20}
-                    value={search}
+                    reference={searchRef}
                     onChangeText={(text) => searchTextHandler(text)}
                   />
                 </View>
@@ -102,6 +111,8 @@ const MembersList = () => {
                 name={item.name}
                 gender={item.gender}
                 age={item.age}
+                phone={item.phone}
+                CNIC_No={item.CNIC_No}
                 address={item.address}
                 id={item._id}
               />

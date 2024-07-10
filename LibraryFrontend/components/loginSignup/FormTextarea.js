@@ -5,10 +5,10 @@ export default function FormTextarea(props) {
   const { inputLabel, placeholder, type, value, row, onChangeText, error } =
     props;
   return (
-    <View>
+    <View style={styles.Container}>
       <HStack>
         <Text style={{ fontWeight: "bold" }}>{inputLabel}</Text>
-        <Text style={styles.errorMessage}>{error}</Text>
+        {/* <Text style={styles.errorMessage}>{error}</Text> */}
       </HStack>
 
       <View style={styles.textAreaContainer}>
@@ -24,16 +24,21 @@ export default function FormTextarea(props) {
           multiline={true}
         />
       </View>
+      <Text style={styles.errorMessage}>{error}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  Container: {
+    flex: 1,
+    marginBottom: 10,
+    // marginTop: 30,
+  },
   textAreaContainer: {
     borderColor: "#1b1b33",
     borderWidth: 1,
     borderRadius: 8,
-    // padding: 5,
   },
   textArea: {
     height: 80,

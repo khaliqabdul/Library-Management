@@ -24,7 +24,7 @@ export default function AlertComponent(props) {
   const { title, body, cancelButtonText, yesButtonText } = props.alertMessage;
   const { showAlert, setShowAlert, isLoggedin, memberData, profile } =
     useLogin();
-  console.log(memberData)
+  // console.log(memberData)
   const data = {
     memberId: { id: memberData.id },
     registration_id: profile.id,

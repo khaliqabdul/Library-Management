@@ -17,9 +17,18 @@ global.io.on("connection", (socket) => {
 
 // create New Reader
 const createNewReader = async (req, res) => {
-  const { registration_id, name, age, gender, address, isBlackListed } =
-    req.body;
-
+  const {
+    registration_id,
+    name,
+    age,
+    gender,
+    birthDate,
+    mobileNumber,
+    cnicNumber,
+    address,
+    isBlackListed,
+  } = req.body;
+  
   if (!registration_id)
     return res
       .status(401)
@@ -30,6 +39,9 @@ const createNewReader = async (req, res) => {
       name,
       age,
       gender,
+      birthDate,
+      phone: mobileNumber,
+      CNIC_No: cnicNumber,
       address,
       isBlackListed,
     });
@@ -91,7 +103,7 @@ const deleteReader = async (req, res) => {
 
       // lesten in MembersList
       io.emit("delete_member", memberData);
-      
+
       res.send({
         success: true,
         message: "member deleted successfully!",
