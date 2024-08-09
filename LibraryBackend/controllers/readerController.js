@@ -106,7 +106,7 @@ const deleteReader = async (req, res) => {
 
       res.send({
         success: true,
-        message: "member deleted successfully!",
+        message: `Member "${memberDeleted.name}" deleted successfully!`,
       });
     }
   } catch (error) {

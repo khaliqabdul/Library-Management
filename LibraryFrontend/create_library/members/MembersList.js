@@ -19,7 +19,7 @@ const MembersList = () => {
   const data = {
     libr: { id: registration_id },
   };
-  console.log(memberData)
+  // console.log(memberData)
   const searchTextHandler = (text) => {
     if (text !== "") {
       let tempData = memberData.filter((item) => {
@@ -29,7 +29,6 @@ const MembersList = () => {
     } else {
       fetchData();
     }
-    
   };
 
   useEffect(() => {

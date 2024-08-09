@@ -19,13 +19,14 @@ export const isvalidCNIC = (value) => {
 };
 
 // Error Handler
-export const updateError = (error, stateUpdator) => {
-  stateUpdator(error);
+export function updateError(error, setError) {
+  setError(error);
   setTimeout(() => {
-    stateUpdator("");
+    setError("");
   }, 2500);
-};
+}
 
 export const isValidFieldObject = (obj) => {
+  // console.log(obj)
   return Object.values(obj).every((value) => value.trim());
 };

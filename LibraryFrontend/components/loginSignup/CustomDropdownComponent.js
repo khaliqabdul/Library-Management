@@ -24,7 +24,7 @@ import {
 } from "@gluestack-ui/themed";
 
 const CustomDropdownComponent = (props) => {
-  const { dropdownList, inputLabel, value, error, } = props;
+  const { dropdownList, inputLabel, value, error } = props;
   const { setDropdownSelectedItem } = useLogin();
   // const [selectedItem, setSelectedItem] = useState("Select Gender");
   const [isClicked, setIsClicked] = useState(false);

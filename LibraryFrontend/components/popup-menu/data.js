@@ -24,6 +24,13 @@ export const genderData = [
   { gender: "Female", code: "2" },
 ];
 
+export const bookGenre = [
+  { genre: "Spirtual Science", code: "1" },
+  { genre: "Physical Science", code: "2" },
+  { genre: "Medical Science", code: "3" },
+  { genre: "Children", code: "4" },
+];
+
 export const countries = [
   { country: "Afghanistan", code: "93", iso: "AF" },
   { country: "Albania", code: "355", iso: "AL" },

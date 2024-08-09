@@ -18,35 +18,13 @@ import {
   CloseIcon,
 } from "@gluestack-ui/themed";
 import { useLogin } from "../context/LoginProvider";
-import client from "../api/client";
 
+// AlertComponent is used in UserCard, 
 export default function AlertComponent(props) {
-  const { title, body, cancelButtonText, yesButtonText } = props.alertMessage;
-  const { showAlert, setShowAlert, isLoggedin, memberData, profile } =
-    useLogin();
-  // console.log(memberData)
-  const data = {
-    memberId: { id: memberData.id },
-    registration_id: profile.id,
-  };
-
-  // delete member
-  const deleteMember = async () => {
-    if (isLoggedin) {
-      await client
-        .post("/deleteReader", data)
-        .then((res) => {
-          alert(res.data.message);
-        })
-        .catch((error) => {
-          console.log("error", error);
-          alert(res.data.message);
-        })
-        .finally(() => {
-          setShowAlert(false);
-        });
-    }
-  };
+  const { title, body, cancelButtonText, yesButtonText, onClick, data } =
+    props.alertMessage;
+  const { showAlert, setShowAlert } = useLogin();
+  
   return (
     <Center h={0}>
       {/* <Button onPress={() => setShowAlert(true)}>
@@ -67,7 +45,9 @@ export default function AlertComponent(props) {
             </AlertDialogCloseButton>
           </AlertDialogHeader>
           <AlertDialogBody>
-            <Text size="lg">{body} "{memberData.name}"</Text>
+            <Text size="lg">
+              {body} "{data}"
+            </Text>
           </AlertDialogBody>
           <AlertDialogFooter>
             <ButtonGroup space="lg">
@@ -80,13 +60,7 @@ export default function AlertComponent(props) {
               >
                 <ButtonText>{cancelButtonText}</ButtonText>
               </Button>
-              <Button
-                bg="$error600"
-                action="negative"
-                onPress={() => {
-                  deleteMember();
-                }}
-              >
+              <Button bg="$error600" action="negative" onPress={onClick}>
                 <ButtonText>{yesButtonText}</ButtonText>
               </Button>
             </ButtonGroup>

@@ -7,22 +7,52 @@ import Colors from "../Colors";
 import ModalComponent from "../popup-menu/ModalComponent";
 import { useLogin } from "../context/LoginProvider";
 import AlertComponent from "../popup-menu/AlertComponent";
+import client from "../api/client";
 
 // user card starts
 const UserCard = ({ name, age, gender, phone, CNIC_No, address, id }) => {
-  const { setShowModal, setMemberData } = useLogin();
-  
+  const {
+    setShowModal,
+    setShowAlert,
+    setMemberData,
+    isLoggedin,
+    memberData,
+    profile,
+  } = useLogin();
+
+  const data = {
+    memberId: { id: memberData.id },
+    registration_id: profile.id,
+  };
+  // alertMessage is used in AlertComponent
   const alertMessage = {
     title: "Warning",
     body: "Are you sure you want to delete the member",
     cancelButtonText: "Cancel",
-    yesButtonText: "Yes"
-  }
+    yesButtonText: "Yes",
+    data: memberData.name,
+    onClick: async () => {
+      if (isLoggedin) {
+        await client
+          .post("/deleteReader", data)
+          .then((res) => {
+            alert(res.data.message);
+          })
+          .catch((error) => {
+            console.log("error", error);
+            alert(res.data.message);
+          })
+          .finally(() => {
+            setShowAlert(false);
+          });
+      }
+    },
+  };
 
   const openModal = () => {
-    setShowModal(true)
-    setMemberData({id, name})
-  }
+    setShowModal(true);
+    setMemberData({ id, name });
+  };
   return (
     <View style={styles.cardContainer}>
       <View style={styles.menuWrapper}>
@@ -42,7 +72,7 @@ const UserCard = ({ name, age, gender, phone, CNIC_No, address, id }) => {
           <Icon color={Colors.dark} icon={faEllipsisVertical} />
         </Pressable>
         {/* Modal component */}
-        <ModalComponent/>
+        <ModalComponent />
       </View>
       <View style={styles.content}>
         <Text style={styles.title}>{name}</Text>
@@ -52,7 +82,7 @@ const UserCard = ({ name, age, gender, phone, CNIC_No, address, id }) => {
         <Text style={styles.text}>{CNIC_No}</Text>
         <Text style={styles.text}>{address}</Text>
       </View>
-      <AlertComponent alertMessage={alertMessage}/>
+      <AlertComponent alertMessage={alertMessage} />
     </View>
   );
 };

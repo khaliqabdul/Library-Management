@@ -5,30 +5,14 @@ import {
   faBookAtlas,
   faCubes,
   faRegistered,
-  faEllipsisVertical
-  
+  faEllipsisVertical,
+  faAddressBook,
+  faUserGraduate,
+  faUser
 } from "@fortawesome/free-solid-svg-icons";
 import Colors from "./Colors";
 
 export const drawerMenu = [
-  {
-    title: "Books",
-    bg: Colors.skyBlue,
-    icon1: faArrowAltCircleRight,
-    icon2: faArrowAltCircleDown,
-    menuList: [
-      {
-        title: "Books List",
-        label: "BooksList",
-        icon: faBookAtlas,
-      },
-      {
-        title: "Notifications",
-        label: "Notifications",
-        icon: faRegistered,
-      },
-    ],
-  },
   {
     title: "Home",
     bg: Colors.skyBlue,
@@ -48,6 +32,24 @@ export const drawerMenu = [
     ],
   },
   {
+    title: "Books",
+    bg: Colors.skyBlue,
+    icon1: faArrowAltCircleRight,
+    icon2: faArrowAltCircleDown,
+    menuList: [
+      {
+        title: "Books List",
+        label: "BooksList",
+        icon: faBookAtlas,
+      },
+      {
+        title: "Add Book",
+        label: "addBook",
+        icon: faBook,
+      },
+    ],
+  },
+  {
     title: "Members",
     bg: Colors.skyBlue,
     icon1: faArrowAltCircleRight,
@@ -56,7 +58,7 @@ export const drawerMenu = [
       {
         title: "Add Member",
         label: "Add Member Screen",
-        icon: faRegistered,
+        icon: faUserGraduate,
       },
       {
         title: "Members List",

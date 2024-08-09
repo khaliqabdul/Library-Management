@@ -34,7 +34,13 @@ const genders = genderData.map((item, index) => {
 });
 
 export default function AddMember() {
-  const { isLoggedin, profile, dropdownSelectedItem, dateOfBirth } = useLogin();
+  const {
+    isLoggedin,
+    profile,
+    dropdownSelectedItem,
+    setDropdownSelectedItem,
+    dateOfBirth,
+  } = useLogin();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false); //used in mobile no
@@ -50,7 +56,7 @@ export default function AddMember() {
   const registration_id = profile.id;
   const gender = dropdownSelectedItem;
   const birthDate = dateOfBirth;
-  
+
   const getAge = (birthDate) => {
     return Math.floor(
       (new Date() - new Date(birthDate).getTime()) / 3.15576e10
@@ -77,12 +83,12 @@ export default function AddMember() {
   function resetForm() {
     setInputInfo({
       name: "",
-      gender: "",
       countryCode: "",
       phoneNumber: "",
       cnicNumber: "",
       address: "",
     });
+    setDropdownSelectedItem("Select");
   }
   // form validation
   const isvalidForm = () => {
@@ -99,7 +105,7 @@ export default function AddMember() {
       return updateError("Empty Field", setError);
     }
     // gender validation
-    if ((gender == "Select")) {
+    if (gender == "Select") {
       return updateError("Empty Field", setError);
     }
     // country code validation
@@ -191,8 +197,8 @@ export default function AddMember() {
             <CustomDropdownComponent
               dropdownList={genders}
               inputLabel="Gender"
-              value={dropdownSelectedItem}
-              error={(gender == "Select" ? error : null)}
+              value={gender}
+              error={gender == "Select" ? error : null}
             />
             {/* Phone Number */}
             <HStack space="md" reversed={false}>

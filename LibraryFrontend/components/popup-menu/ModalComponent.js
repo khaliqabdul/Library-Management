@@ -11,7 +11,6 @@ import { useLogin } from "../context/LoginProvider";
 import Colors from "../Colors";
 import Icon from "../Icons";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
-import client from "../api/client";
 
 const Divider = () => <View style={styles.divider} />;
 const deviceHeight = Dimensions.get("window").height;

@@ -1,9 +1,17 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  ImageBackground,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import client from "./api/client";
 import { useLogin } from "./context/LoginProvider";
 import ProgressScreen from "./loginSignup/ProgressScreen";
+import bgCover from "../assets/images/splash.jpeg"
 
 export default function ImageUpload({ navigation }) {
   const [profileImage, setProfileImage] = useState();
@@ -32,10 +40,11 @@ export default function ImageUpload({ navigation }) {
       }
     }
   };
+
   const uploadProfileImage = async () => {
     const imageData = new FormData();
     imageData.append("profile", profileImage);
-    
+    console.log(profileImage);
     try {
       const res = await client.post("/upload-profile", imageData, {
         headers: {
@@ -63,33 +72,38 @@ export default function ImageUpload({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      {progress ? <ProgressScreen process={progress} /> : null}
-      <View style={styles.innerContainer}>
-        <Pressable onPress={openImageLibrary} style={styles.uploadBtnContainer}>
-          {profileImage ? (
-            <Image
-              source={{ uri: profileImage.uri }}
-              style={{ width: "100%", height: "100%" }}
-            />
-          ) : (
-            <Text style={styles.UploadBtnText}>Upload Profile Image</Text>
-          )}
-        </Pressable>
-        <Text style={styles.skipText}>Skip</Text>
-        {profileImage ? (
-          <Text
-            onPress={uploadProfileImage}
-            style={[
-              styles.skipText,
-              { backgroundColor: "green", borderRadius: 8, color: "white" },
-            ]}
+    <ImageBackground source={bgCover} style={{flex: 1}} resizeMode="cover">
+      <View style={styles.container}>
+        {progress ? <ProgressScreen process={progress} /> : null}
+        <View style={styles.innerContainer}>
+          <Pressable
+            onPress={openImageLibrary}
+            style={styles.uploadBtnContainer}
           >
-            Upload
-          </Text>
-        ) : null}
+            {profileImage ? (
+              <Image
+                source={{ uri: profileImage.uri }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            ) : (
+              <Text style={styles.UploadBtnText}>Upload Profile Image</Text>
+            )}
+          </Pressable>
+          <Text style={styles.skipText}>Skip</Text>
+          {profileImage ? (
+            <Text
+              onPress={uploadProfileImage}
+              style={[
+                styles.skipText,
+                { backgroundColor: "green", borderRadius: 8, color: "white" },
+              ]}
+            >
+              Upload
+            </Text>
+          ) : null}
+        </View>
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 

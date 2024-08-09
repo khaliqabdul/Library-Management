@@ -16,7 +16,7 @@ export default function LibraryHome() {
   return isLoggedin ? (
     <>
       {loginPending ? <LoadingScreen /> : null}
-      <Stack.Navigator>
+      <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Dashboard" component={Dashboard} />
       </Stack.Navigator>
     </>

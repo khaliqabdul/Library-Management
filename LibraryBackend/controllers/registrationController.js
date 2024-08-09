@@ -146,6 +146,8 @@ const signOut = async (req, res) => {
 const uploadProfileImage = async (req, res) => {
   const { user } = req;
   // console.log(req.file)
+  // console.log(req.body)
+
   if (!user)
     return res
       .status(401)

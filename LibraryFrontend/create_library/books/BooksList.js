@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect, useRef } from "react";
 import {
   SafeAreaView,
   View,
@@ -8,58 +7,101 @@ import {
   Text,
   ActivityIndicator,
 } from "react-native";
-
-const BookItem = ({ title, author, price }) => (
-  <View style={styles.item}>
-    <View style={styles.itemLeft}>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.author}>{author}</Text>
-    </View>
-    <View style={styles.itemRight}>
-      <Text style={styles.price}>Rs.{price}</Text>
-    </View>
-  </View>
-);
+import client from "../../components/api/client";
+import socketServices from "../../components/utils/socketService";
+import { useMedia } from "@gluestack-style/react";
+import Icon from "../../components/Icons";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import FormInput from "../../components/loginSignup/FormInput";
+import BookCard from "../../components/card/BookCard";
 
 const BooksList = () => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const searchRef = useRef();
 
-  const options = {
-    method: 'POST',
-    body: JSON.stringify()
-  }
+  useEffect(() => {
+    socketServices.iniliazeSocket();
+  }, []);
+
+  useEffect(() => {
+    // listen from bookController
+    socketServices.on("send_booksList", (data) => {
+      setBooks(data);
+    });
+  }, [books]);
+
+  const searchTextHandler = (text) => {
+    if (text !== "") {
+      let tempData = books.filter((item) => {
+        return item.bookTitle.toLowerCase().indexOf(text.toLowerCase()) > -1;
+      });
+      setBooks(tempData);
+    } else {
+      getBooks();
+    }
+  };
 
   async function getBooks() {
-    try {
-      
-      const {data: books} = await axios.get("http://192.168.1.3:3001/books")
-      setBooks(books);
-    } catch (err) {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
+    await client
+      .get("/booksList")
+      .then((res) => {
+        setBooks(res.data.booksList);
+      })
+      .catch((err) => {
+        console.log("Error", err.message);
+        // setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   useEffect(() => {
     getBooks();
   }, []);
 
-  if (error)
-    return (
-      <Text style={styles.errorMsg}>Unable to connect to the server.</Text>
-    );
-
-  if (loading) return <ActivityIndicator size="large" />;
+  const media = useMedia();
 
   return (
-    <FlatList
-      data={books}
-      renderItem={({ item }) => <BookItem {...item} />}
-      keyExtractor={(item) => item.id}
-    />
+    <>
+      {loading || error ? (
+        <>
+          <Text style={styles.errorMsg}>Unable to connect to the server.</Text>
+          <ActivityIndicator size="large" />
+        </>
+      ) : (
+        <>
+          <FlatList
+            numColumns={media.lg ? 3 : 1}
+            ListHeaderComponent={
+              <>
+                {/* header */}
+                <Text style={styles.headerText}>Book's List</Text>
+                {/* search box */}
+                <View style={{ marginTop: 5 }}>
+                  <View style={styles.iconContainer}>
+                    <Icon icon={faSearch} />
+                  </View>
+                  <FormInput
+                    placeholder="Search"
+                    marginHorizontal={20}
+                    reference={searchRef}
+                    onChangeText={(text) => searchTextHandler(text)}
+                  />
+                </View>
+              </>
+            }
+            data={books}
+            renderItem={({ item }) => (
+              <BookCard {...item} />
+            )}
+            keyExtractor={(item) => item._id.toString()}
+          />
+        </>
+      )}
+    </>
   );
 };
 export default BooksList;
@@ -69,39 +111,28 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: "10%",
   },
-  item: {
-    flex: 1,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "flex-start",
-    backgroundColor: "#eee",
-    padding: 12,
-    marginVertical: 8,
-    marginHorizontal: 16,
-  },
-  itemLeft: {
-    width: "70%",
-  },
-  itemRight: {
-    width: "30%",
-  },
-  title: {
-    fontSize: 22,
-    color: "#222",
-  },
-  author: {
-    fontSize: 16,
-    color: "#333",
-  },
-  price: {
-    fontSize: 20,
-    color: "#333",
-    textAlign: "right",
-  },
   errorMsg: {
     color: "#ee8888",
     fontSize: 20,
     padding: 24,
     textAlign: "center",
+  },
+  
+  // List Header
+  headerText: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginTop: 10,
+    marginLeft: 20,
+    letterSpacing: 1,
+  },
+  iconContainer: {
+    position: "absolute",
+    top: 35,
+    right: 30,
+    width: 30,
+    height: 30,
+    borderRadius: 50,
+    // backgroundColor: 'green'
   },
 });
