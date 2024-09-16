@@ -56,14 +56,14 @@ export const drawerMenu = [
     icon2: faArrowAltCircleDown,
     menuList: [
       {
-        title: "Add Member",
-        label: "Add Member Screen",
-        icon: faUserGraduate,
-      },
-      {
         title: "Members List",
         label: "MemberList",
         icon: faRegistered,
+      },
+      {
+        title: "Add Member",
+        label: "Add Member Screen",
+        icon: faUserGraduate,
       },
     ],
   },

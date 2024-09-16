@@ -28,7 +28,7 @@ const createNewReader = async (req, res) => {
     address,
     isBlackListed,
   } = req.body;
-  
+
   if (!registration_id)
     return res
       .status(401)
@@ -95,13 +95,19 @@ const deleteReader = async (req, res) => {
       { _id: id },
       { new: true }
     );
+    // remove related reader_id from User
+    await User.updateOne(
+      { _id: registration_id },
+      { $pull: { reader_id: id } }
+    );
+
     if (memberDeleted) {
       const librarianData = await User.findById({
         _id: registration_id,
       }).populate("reader_id");
       const memberData = librarianData.reader_id;
 
-      // lesten in MembersList
+      // listen in MembersList
       io.emit("delete_member", memberData);
 
       res.send({

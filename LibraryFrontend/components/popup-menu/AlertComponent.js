@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import {
   Center,
   Button,
@@ -19,22 +19,23 @@ import {
 } from "@gluestack-ui/themed";
 import { useLogin } from "../context/LoginProvider";
 
-// AlertComponent is used in UserCard, 
-export default function AlertComponent(props) {
-  const { title, body, cancelButtonText, yesButtonText, onClick, data } =
-    props.alertMessage;
-  const { showAlert, setShowAlert } = useLogin();
-  
+// AlertComponent is used in UserCard,
+export default function AlertComponent({
+  title,
+  children,
+  onCancelClick,
+  onYesClick,
+  showAlert,
+  setShowAlert,
+  data,
+}) {
+  // const { showAlert, setShowAlert } = useLogin();
+
   return (
     <Center h={0}>
-      {/* <Button onPress={() => setShowAlert(true)}>
-        <ButtonText>Click me</ButtonText>
-      </Button> */}
       <AlertDialog
         isOpen={showAlert}
-        onClose={() => {
-          setShowAlert(false);
-        }}
+        onClose={() => {setShowAlert(false)}}
       >
         <AlertDialogBackdrop />
         <AlertDialogContent>
@@ -45,23 +46,19 @@ export default function AlertComponent(props) {
             </AlertDialogCloseButton>
           </AlertDialogHeader>
           <AlertDialogBody>
-            <Text size="lg">
-              {body} "{data}"
-            </Text>
+            <Text size="lg">{children} "{data}"</Text>
           </AlertDialogBody>
           <AlertDialogFooter>
             <ButtonGroup space="lg">
               <Button
                 variant="outline"
                 action="secondary"
-                onPress={() => {
-                  setShowAlert(false);
-                }}
+                onPress={onCancelClick}
               >
-                <ButtonText>{cancelButtonText}</ButtonText>
+                <ButtonText>Cancel</ButtonText>
               </Button>
-              <Button bg="$error600" action="negative" onPress={onClick}>
-                <ButtonText>{yesButtonText}</ButtonText>
+              <Button bg="$error600" action="negative" onPress={onYesClick}>
+                <ButtonText>Yes</ButtonText>
               </Button>
             </ButtonGroup>
           </AlertDialogFooter>

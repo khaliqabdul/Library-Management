@@ -13,25 +13,26 @@ import { StyleSheet } from "react-native";
 import { useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useLogin } from "../components/context/LoginProvider";
-import FormHeader from "../components/loginSignup/ٖFormHeader";
-import FormInput from "../components/loginSignup/FormInput";
-import LoadingScreen from "../components/loginSignup/LoadingScreen";
+import FormHeader from "../components/formElements/ٖFormHeader";
+import FormInput from "../components/formElements/FormInput";
+import LoadingScreen from "../components/formElements/LoadingScreen";
 
-import FormSelectorButton from "../components/loginSignup/FormSelectorButton";
-import FormSubmitButton from "../components/loginSignup/FormSubmitButton";
+import FormSelectorButton from "../components/formElements/FormSelectorButton";
+import FormSubmitButton from "../components/formElements/FormSubmitButton";
 import {
   isValidFieldObject,
   isvalidEmail,
   updateError,
 } from "../components/utils/formValidationMethods";
 import { signIn } from "../components/api/user";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Stack = createNativeStackNavigator();
 
 export default function LoginScreen({ navigation }) {
-  const { loginPending, setLoginPending, setIsLoggedIn, setProfile } =
+  const { loginPending, setLoginPending, setIsLoggedIn, setProfile, setIsToken } =
     useLogin();
-
+  
   const [error, setError] = useState("");
   const [inputInfo, setInputInfo] = useState({
     email: "",
@@ -68,6 +69,8 @@ export default function LoginScreen({ navigation }) {
         setLoginPending(false);
         setInputInfo({ email: "", password: "" });
       } else {
+        const token = await AsyncStorage.getItem("token")
+        setIsToken(token)
         setProfile(res.data.user);
         setInputInfo({ email: "", password: "" });
         setIsLoggedIn(true);

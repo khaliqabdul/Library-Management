@@ -16,7 +16,6 @@ global.io.on("connection", (socket) => {
 // add book
 const addBook = async (req, res) => {
   const { registration_id, bookTitle, author, genre, price, image } = req.body;
-  // console.log("body",req.body)
   if (!registration_id)
     return res
       .status(401)
@@ -31,11 +30,21 @@ const addBook = async (req, res) => {
       image,
     });
     const bookData = await book.save();
+    await User.findByIdAndUpdate(
+      { _id: registration_id },
+      {
+        $push: { book_id: bookData._id },
+      }
+    );
+
+    const librarianData = await User.findById({
+      _id: registration_id,
+    }).populate("book_id");
+    const booksList = librarianData.book_id;
     // send data to BooksList component
-    const booksList = await Book.find();
     io.emit("send_booksList", booksList);
 
-    res.send({
+    return res.send({
       success: true,
       message: `book ${bookData.bookTitle} added successfully!`,
     });
@@ -47,9 +56,20 @@ const addBook = async (req, res) => {
 
 // Books List
 const booksList = async (req, res) => {
+  const { id } = req.body;
+  if (!id)
+    return res
+      .status(401)
+      .json({ success: false, message: "unauthorize access!" });
+
   try {
-    const booksList = await Book.find();
-    res.send({
+    const librarianData = await User.findById({ _id: id }).populate("book_id");
+    const booksList = librarianData.book_id;
+
+    // lesten in BooksList component
+    io.emit("send_booksList", booksList);
+
+    return res.send({
       success: true,
       message: "Books Populated successfully!",
       booksList,
@@ -62,18 +82,105 @@ const booksList = async (req, res) => {
 // delete Book
 const deleteBook = async (req, res) => {
   const data = req.body;
-  const id = data.bookId;
+  const { bookId } = data;
   const registration_id = data.registration_id;
   try {
-    const deletedBook = await Book.findByIdAndDelete({ _id: id }, { new: true });
-    if(deletedBook){
-      const newBooksList = await Book.find()
+    const deletedBook = await Book.findByIdAndDelete(
+      { _id: bookId },
+      { new: true }
+    );
+    // remove related book_id from User
+    await User.updateOne(
+      { _id: registration_id },
+      { $pull: { book_id: bookId } }
+    );
+
+    if (deletedBook) {
+      const librarianData = await User.findById({
+        _id: registration_id,
+      }).populate("book_id");
+      const newBooksList = librarianData.book_id;
       // lesten in BooksList component
       io.emit("send_booksList", newBooksList);
 
-      res.send({
+      return res.send({
         success: true,
-        message: `Book ${deletedBook.bookTitle} deleted successfully!`,
+        message: `Book "${deletedBook.bookTitle}" deleted successfully!`,
+      });
+    }
+  } catch (error) {
+    console.log(error.message);
+    return res.status(422).send({ success: false, message: error.message });
+  }
+};
+// set As Lended
+const setAsLended = async (req, res) => {
+  const { bookId, reg_id } = req.body;
+  // console.log("updated book id", bookId);
+  let updates = {
+    $push: {
+      lendingHistory: {
+        lendedOn: new Date(),
+        lendedById: req.body.lenderId,
+        lendedByName: req.body.lenderName,
+      },
+    },
+  };
+  try {
+    const lendBook = await Book.findByIdAndUpdate({ _id: bookId }, updates, {
+      new: true,
+    });
+    if (lendBook) {
+      const librarianData = await User.findById({ _id: reg_id }).populate(
+        "book_id"
+      );
+      const newBooksList = librarianData.book_id;
+      // listen in BooksList component
+      io.emit("send_booksList", newBooksList);
+      // listen in BookLendingHistory component
+      io.emit("sendTo_bookDetail", lendBook.lendingHistory);
+      const currentLender = lendBook.lendingHistory.pop();
+      return res.send({
+        success: true,
+        message: `Book lended to ${currentLender.lendedByName} successfully!`,
+      });
+    }
+  } catch (error) {
+    console.log(error.message);
+    return res.status(422).send({ success: false, message: error.message });
+  }
+};
+// set as returned
+const setAsReturned = async (req, res) => {
+  const { reg_id, bookId } = req.body;
+  let updates = {
+    $set: {
+      "lendingHistory.$.returnedOn": new Date(),
+    },
+  };
+  let query = {
+    _id: bookId,
+    "lendingHistory.lendedById": req.body.lenderId,
+    "lendingHistory.returnedOn": null,
+  };
+  try {
+    const returnBook = await Book.findOneAndUpdate(query, updates, {
+      new: true,
+    });
+
+    if (returnBook) {
+      const librarianData = await User.findById({ _id: reg_id }).populate(
+        "book_id"
+      );
+      const newBooksList = librarianData.book_id;
+      // lesten in BooksList component
+      io.emit("send_booksList", newBooksList);
+      // listen in BookLendingHistory component
+      io.emit("sendTo_bookDetail", returnBook.lendingHistory);
+      const lastReader = returnBook.lendingHistory.pop();
+      return res.send({
+        success: true,
+        message: `Book returned by ${lastReader.lendedByName} successfully!`,
       });
     }
   } catch (error) {
@@ -86,4 +193,6 @@ module.exports = {
   addBook,
   booksList,
   deleteBook,
+  setAsLended,
+  setAsReturned,
 };

@@ -8,16 +8,16 @@ import {
 import { StyleSheet } from "react-native";
 import { useState } from "react";
 
-import FormInput from "../components/loginSignup/FormInput";
-import FormHeader from "../components/loginSignup/ٖFormHeader";
-import FormSelectorButton from "../components/loginSignup/FormSelectorButton";
-import FormSubmitButton from "../components/loginSignup/FormSubmitButton";
+import FormInput from "../components/formElements/FormInput";
+import FormHeader from "../components/formElements/ٖFormHeader";
+import FormSelectorButton from "../components/formElements/FormSelectorButton";
+import FormSubmitButton from "../components/formElements/FormSubmitButton";
 import {
   isValidFieldObject,
   isvalidEmail,
   updateError,
 } from "../components/utils/formValidationMethods";
-import LoadingScreen from "../components/loginSignup/LoadingScreen";
+import LoadingScreen from "../components/formElements/LoadingScreen";
 import { useLogin } from "../components/context/LoginProvider";
 import { signUp } from "../components/api/user";
 

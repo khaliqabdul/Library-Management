@@ -5,7 +5,7 @@ import LoginScreen from "./LoginScreen";
 import RegisterScreen from "./RegisterScreen";
 import Dashboard from "./Dashboard";
 import { useLogin } from "../components/context/LoginProvider";
-import LoadingScreen from "../components/loginSignup/LoadingScreen";
+import LoadingScreen from "../components/formElements/LoadingScreen";
 
 const Tab = createMaterialTopTabNavigator();
 const Stack = createNativeStackNavigator();

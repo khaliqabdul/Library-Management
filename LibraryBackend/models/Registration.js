@@ -7,6 +7,10 @@ const registrationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Reader'
     }],
+    book_id: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Book'
+    }],
     firstName: {type: String, required: true, trim: true},
     lastName: {type: String, required: true},
     email: {type: String, unique: true, required: true, trim: true},

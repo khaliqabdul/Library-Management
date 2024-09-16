@@ -9,7 +9,7 @@ readerRouter.use(bodyParser.json())
 readerRouter.use(bodyParser.urlencoded({extended: true}))
 // routes
 readerRouter.post('/reader', readerController.createNewReader);
-readerRouter.post("/getAllReaders", readerController.getAllReaders);
+readerRouter.post("/getAllReaders", authToken, readerController.getAllReaders);
 readerRouter.post("/deleteReader", readerController.deleteReader);
 // readerRouter.get("/blacklisted", authToken, readerController.getBlacklistedReader);
 

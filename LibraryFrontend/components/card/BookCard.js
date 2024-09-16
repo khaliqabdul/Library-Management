@@ -1,57 +1,102 @@
 import { StyleSheet, Text, View, Image, Pressable } from "react-native";
-import React from "react";
-import {
-  faEdit,
-  faTrash,
-  faListDots,
-} from "@fortawesome/free-solid-svg-icons";
+import React, { useState } from "react";
+import { faEdit, faTrash, faListDots } from "@fortawesome/free-solid-svg-icons";
 import Colors from "../Colors";
 import Icon from "../Icons";
 import { useLogin } from "../context/LoginProvider";
 import client from "../api/client";
 import AlertComponent from "../popup-menu/AlertComponent";
+import ModalComponent from "../popup-menu/ModalComponent";
 
-const BookCard = ({ bookTitle, author, price, image, genre, _id}) => {
-  const { isLoggedin, profile, setShowAlert, bookData, setBookData } = useLogin();
+const BookCard = ({
+  bookTitle,
+  author,
+  price,
+  image,
+  genre,
+  _id,
+  lendingHistory,
+  navigation,
+}) => {
+  const { isLoggedin, profile, setBookData } = useLogin();
+  const [showAlert, setShowAlert] = useState(false);
+  const [selectedBook, setSelectedBook] = useState();
+  const [showModal, setShowModal] = useState(false);
+  
+  let bookStatus = "Available";
+  lendingHistory.forEach((element) => {
+    if (!element.returnedOn) {
+      bookStatus = "Issued";
+    } else {
+      bookStatus = "Available";
+    }
+  });
 
   const activateAlert = () => {
     setShowAlert(true);
-    setBookData({_id, bookTitle})
+    setSelectedBook({ _id, bookTitle });
   };
-  
-  const data = {
-    bookId: bookData._id,
-    registration_id: profile.id,
+  // Modal Component
+  const openModal = () => {
+    setShowModal(true);
   };
 
-  // alertMessage is used in AlertComponent
-  const alertMessage = {
-    title: "Warning",
-    body: "Are you sure you want to delete book",
-    cancelButtonText: "Cancel",
-    yesButtonText: "Yes",
-    data: bookData.bookTitle,
-    onClick: async () => {
-      if (isLoggedin) {
-        await client
-          .post("/deleteBook", data)
-          .then((res) => {
-            alert(res.data.message);
-          })
-          .catch((error) => {
-            console.log("error", error);
-            alert(res.data.message);
-          })
-          .finally(() => {
-            setShowAlert(false);
-          });
-      }
-    },
+  const openPurchaseDetail = () => {
+    setShowModal(false)
+    navigation.navigate("bookPurchase");
+  }
+
+  function openBookDetail() {
+    setShowModal(false)
+    navigation.navigate("bookDetail");
+    setBookData({
+      _id,
+      bookTitle,
+      price,
+      author,
+      genre,
+      image,
+      lendingHistory,
+    });
+  }
+
+  // AlertComponent props
+  let book = "";
+  let data = {};
+  if (selectedBook) {
+    book = selectedBook.bookTitle;
+    data = {
+      bookId: selectedBook._id,
+      registration_id: profile.id,
+    };
+  }
+  const onCancelClick = () => {
+    setShowAlert(false);
   };
+
+  const onYesClick = async () => {
+    if (isLoggedin) {
+      await client
+        .post("/deleteBook", data)
+        .then((res) => {
+          alert(res.data.message);
+        })
+        .catch((error) => {
+          console.log("error", error);
+          alert(res.data.message);
+        })
+        .finally(() => {
+          setShowAlert(false);
+        });
+    }
+  };
+
   return (
     <View style={styles.item}>
       <View style={styles.itemLeft}>
-        <Image source={{ uri: image }} style={styles.image} />
+        <Pressable onPress={() => openModal()}>
+          <Image source={{ uri: image }} style={styles.image} />
+        </Pressable>
       </View>
       <View style={styles.itemRight}>
         <View style={styles.verticalItem}>
@@ -60,19 +105,48 @@ const BookCard = ({ bookTitle, author, price, image, genre, _id}) => {
             <Text style={styles.price}>{genre}</Text>
             <Text style={styles.author}>{author}</Text>
             <Text style={styles.price}>Rs.{price}</Text>
-            <Text style={styles.status}>Status:</Text>
+            <Text style={styles.status}>{`Status: ${bookStatus}`}</Text>
           </View>
           <View style={styles.bottom}>
             <View style={styles.icons}>
-              <Icon icon={faEdit} />
-              <Pressable onPress={() => activateAlert()}>
+              {/* edit icon */}
+              <Pressable style={styles.circle} onPress={() => {}}>
+                <Icon icon={faEdit} />
+              </Pressable>
+              {/* delete icon */}
+              <Pressable style={styles.circle} onPress={() => activateAlert()}>
                 <Icon icon={faTrash} />
               </Pressable>
-              <Icon icon={faListDots} />
+              {/* listDots icon */}
+              <Pressable style={styles.circle} onPress={() => openModal()}>
+                <Icon icon={faListDots} />
+              </Pressable>
             </View>
           </View>
         </View>
-        <AlertComponent alertMessage={alertMessage}/>
+        {showAlert ? (
+          <AlertComponent
+            title="Warning"
+            showAlert
+            setShowAlert={setShowAlert}
+            onCancelClick={onCancelClick}
+            onYesClick={onYesClick}
+            data={book}
+          >
+            Are you sure you want to delete book
+          </AlertComponent>
+        ) : null}
+        {/* Modal Component */}
+        {showModal ? (
+          <ModalComponent
+            showModal={showModal}
+            setShowModal={setShowModal}
+            function2={openBookDetail}
+            function3={openPurchaseDetail}
+            data2="Lending Record"
+            data3="Purchase Record"
+          />
+        ) : null}
       </View>
     </View>
   );
@@ -109,11 +183,11 @@ const styles = StyleSheet.create({
     // alignItems: 'flex-end'
   },
   top: {
-    height: "80%",
+    height: "65%",
   },
   bottom: {
     height: "20%",
-    marginTop: 30,
+    marginTop: 20,
   },
   icons: {
     flex: 1,
@@ -136,7 +210,7 @@ const styles = StyleSheet.create({
   },
   status: {
     fontSize: 16,
-    color: "#ee8888",
+    color: Colors.purple,
   },
   image: {
     width: 110,
@@ -144,5 +218,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: "green",
     borderWidth: 2,
+  },
+  circle: {
+    // backgroundColor: 'white',
+    borderWidth: 1,
+    width: 30,
+    height: 30,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

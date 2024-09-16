@@ -5,7 +5,7 @@ import client from "../../components/api/client";
 import { useLogin } from "../../components/context/LoginProvider";
 import socketServices from "../../components/utils/socketService";
 import UserCard from "../../components/card/UserCard";
-import FormInput from "../../components/loginSignup/FormInput";
+import FormInput from "../../components/formElements/FormInput";
 import Icon from "../../components/Icons";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 
@@ -14,7 +14,8 @@ const MembersList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const searchRef = useRef();
-  const { profile, isLoggedin } = useLogin();
+  const { profile, isLoggedin, isToken } = useLogin();
+
   const registration_id = profile.id;
   const data = {
     libr: { id: registration_id },
@@ -51,13 +52,17 @@ const MembersList = () => {
         .post("/getAllReaders", data.libr, {
           headers: {
             "Content-Type": "application/json",
+            // "Content-Type": "multipart/form-data",
+            authorization: `${isToken}`,
           },
         })
         .then((res) => {
+          alert(res.data.message)
           setMemberData(res.data.memberData);
         })
         .catch((err) => {
           console.log("Error", err.message);
+          alert(err.message)
           setError(true);
         })
         .finally(() => {

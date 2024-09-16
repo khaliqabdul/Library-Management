@@ -7,28 +7,21 @@ import {
   Dimensions,
 } from "react-native";
 import React, { useState } from "react";
-import { useLogin } from "../context/LoginProvider";
 import Colors from "../Colors";
-import Icon from "../Icons";
-import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const Divider = () => <View style={styles.divider} />;
 const deviceHeight = Dimensions.get("window").height;
 
-const ModalComponent = () => {
-  const { showModal, setShowModal, memberData, setShowAlert } = useLogin();
-
-  // activate alert
-  const activateAlert = () => {
-    setShowAlert(true);
-    setShowModal(false);
-  };
-
-  const EditMember = () => {
-    setShowModal(false);
-    console.log("in modal", memberData);
-  };
-
+const ModalComponent = ({
+  data1,
+  activateAlert,
+  data2,
+  function2,
+  data3,
+  function3,
+  showModal,
+  setShowModal,
+}) => {
   return (
     <Modal
       transparent={true}
@@ -38,25 +31,35 @@ const ModalComponent = () => {
     >
       <View style={styles.modalContainer}>
         <View style={styles.modal}>
-          <View style={styles.barIcon}></View>
-          {/* Delete Member */}
-          <Pressable style={styles.row} onPress={() => activateAlert()}>
-            <Text style={styles.text}>Delete</Text>
-            <Text style={styles.text}>
-              <Icon color={Colors.white} icon={faTrash} />
-            </Text>
+          <Pressable onPress={() => setShowModal(false)}>
+            <View style={styles.barIcon}></View>
+          </Pressable>
+          {/* data 1 */}
+          {data1 ? (
+            <>
+              <Pressable style={styles.row} onPress={activateAlert}>
+                <Text style={styles.text}>{data1}</Text>
+              </Pressable>
+              <Divider />
+            </>
+          ) : null}
+          {/* data 2 */}
+          <Pressable style={styles.row} onPress={function2}>
+            <Text style={styles.text}>{data2}</Text>
           </Pressable>
           <Divider />
-          {/* Edit Member */}
-          <Pressable style={styles.row} onPress={() => EditMember()}>
-            <Text style={styles.text}>Edit</Text>
-            <Text style={styles.text}>
-              <Icon color={Colors.white} icon={faEdit} />
-            </Text>
-          </Pressable>
-          {/* close Button */}
+          {/* data 3 */}
+          {data3 ? (
+            <>
+              <Pressable style={styles.row} onPress={function3}>
+                <Text style={styles.text}>{data3}</Text>
+              </Pressable>
+              <Divider />
+            </>
+          ) : null}
+          {/* cancel Button */}
           <Pressable onPress={() => setShowModal(false)}>
-            <Text style={styles.pressibleText}>Close</Text>
+            <Text style={styles.pressibleText}>Cancel</Text>
           </Pressable>
         </View>
       </View>
@@ -80,7 +83,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
     padding: 10,
-    minHeight: deviceHeight * 0.3,
+    minHeight: deviceHeight * 0.2,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -88,8 +91,9 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   pressibleText: {
-    backgroundColor: Colors.menu2,
-    marginTop: 10,
+    // backgroundColor: Colors.menu2,
+    color: Colors.white,
+    marginTop: 20,
     textAlign: "center",
     fontSize: 18,
     fontWeight: "600",
@@ -107,7 +111,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
   },
   text: {
     color: Colors.white,

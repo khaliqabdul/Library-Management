@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  SafeAreaView,
   View,
   FlatList,
   StyleSheet,
@@ -12,17 +11,24 @@ import socketServices from "../../components/utils/socketService";
 import { useMedia } from "@gluestack-style/react";
 import Icon from "../../components/Icons";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import FormInput from "../../components/loginSignup/FormInput";
+import FormInput from "../../components/formElements/FormInput";
 import BookCard from "../../components/card/BookCard";
+import { useLogin } from "../../components/context/LoginProvider";
 
-const BooksList = () => {
+const BooksList = ({ navigation }) => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const searchRef = useRef();
+  const { profile, isLoggedin, isToken } = useLogin();
+  const registration_id = profile.id;
+  const data = {
+    librarianId: { id: registration_id },
+  };
 
   useEffect(() => {
     socketServices.iniliazeSocket();
+    getBooks();
   }, []);
 
   useEffect(() => {
@@ -44,26 +50,28 @@ const BooksList = () => {
   };
 
   async function getBooks() {
-    await client
-      .get("/booksList")
-      .then((res) => {
-        setBooks(res.data.booksList);
-      })
-      .catch((err) => {
-        console.log("Error", err.message);
-        // setError(true);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    if (isLoggedin) {
+      await client
+        .post("/booksList", data.librarianId, {
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `${isToken}`,
+          },
+        })
+        .then((res) => {
+          alert(res.data.message)
+          setBooks(res.data.booksList);
+        })
+        .catch((err) => {
+          console.log("Error", err.message);
+          setError(true);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
   }
-
-  useEffect(() => {
-    getBooks();
-  }, []);
-
   const media = useMedia();
-
   return (
     <>
       {loading || error ? (
@@ -95,7 +103,7 @@ const BooksList = () => {
             }
             data={books}
             renderItem={({ item }) => (
-              <BookCard {...item} />
+              <BookCard {...item} navigation={navigation} />
             )}
             keyExtractor={(item) => item._id.toString()}
           />
@@ -117,7 +125,7 @@ const styles = StyleSheet.create({
     padding: 24,
     textAlign: "center",
   },
-  
+
   // List Header
   headerText: {
     fontSize: 20,

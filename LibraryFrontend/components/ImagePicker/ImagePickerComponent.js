@@ -21,15 +21,15 @@ export default function ImagePickerComponent() {
         // aspect: [4, 3],
         // quality: 1,
       });
-    //   console.log(result);'data:image/jpeg;base64,' + 
+      //   console.log(result);'data:image/jpeg;base64,' +
       if (!result.canceled) {
-        const uriImage = result.assets[0].uri
-        const base64 = 'data:image/jpeg;base64,' + result.assets[0].base64
-        setImage(base64); 
+        const uriImage = result.assets[0].uri;
+        const base64 = "data:image/jpeg;base64," + result.assets[0].base64;
+        setImage(base64);
       }
     }
   };
-//   console.log(image)
+  //   console.log(image)
   return (
     <View style={styles.container}>
       <Button title="Pick an image" onPress={pickImage} />

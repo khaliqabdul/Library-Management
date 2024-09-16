@@ -10,6 +10,8 @@ import MembersList from "./members/MembersList";
 import Chat from "./chat/Chat";
 import BooksList from "./books/BooksList";
 import AddBook from "./books/AddBook";
+import BookDetail from "./books/BookDetail";
+import BookPurchaseHistory from "./books/BookPurchaseHistory"
 
 function HomeScreen({ navigation }) {
   return (
@@ -47,7 +49,7 @@ export default function Dashboard() {
         screenOptions={{
           drawerType: dimensions.width >= 768 ? "permanent" : "front",
           headerShown: true,
-          headerTitle: "",
+          headerTitle: "Library Management System",
           overlayColor: "transparent",
           drawerStyle: styles.drawerStyle,
           drawerActiveBackgroundColor: Colors.red,
@@ -60,8 +62,10 @@ export default function Dashboard() {
         <Drawer.Screen name="Notifications" component={Chat} />
         <Drawer.Screen name="BooksList" component={BooksList} />
         <Drawer.Screen name="addBook" component={AddBook} />
-        <Drawer.Screen name="Add Member Screen" component={AddMember} />
         <Drawer.Screen name="MemberList" component={MembersList} />
+        <Drawer.Screen name="Add Member Screen" component={AddMember} />
+        <Drawer.Screen name="bookDetail" component={BookDetail} />
+        <Drawer.Screen name="bookPurchase" component={BookPurchaseHistory} />
       </Drawer.Navigator>
     </>
   );

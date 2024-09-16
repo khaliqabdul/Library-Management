@@ -15,7 +15,7 @@ import socketServices from "../components/utils/socketService";
 
 function CustomDrawerContent({ navigation, progress, ...rest }) {
 
-  const { setIsLoggedIn, profile, setLoginPending } = useLogin();
+  const { setIsLoggedIn, profile, setProfile, setLoginPending, setIsToken } = useLogin();
   const [menuIndex, setMenuIndex] = useState(-1);
   const [updatedProfile, setUpdatedProfile] = useState({})
   
@@ -136,6 +136,8 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
           const isLoggedOut = await signOut();
           if (isLoggedOut) {
             setIsLoggedIn(false);
+            setProfile({});
+            setIsToken("")
           }
           setLoginPending(false);
         }}

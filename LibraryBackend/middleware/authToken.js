@@ -5,20 +5,23 @@ const { jwtKey } = require("../keys");
 
 module.exports = async (req, res, next) => {
   const { authorization } = req.headers;
-  // console.log(authorization)
+  // console.log(req.headers)
   if (authorization) {
     const token = authorization.replace("Bearer ", "");
     try {
       const verifyToken = jwt.verify(token, jwtKey);
       const user = await User.findById(verifyToken.userId);
+      console.log(verifyToken)
+      console.log(user.email)
       if (!user) {
         return res.json({ success: false, message: "unauthorized access!" });
       }
       req.user = user;
       next();
     } catch (error) {
+      console.log(error.name)
       if (error.name === "JsonWebTokenError") {
-        return res.json({ success: false, message: "unauthorised access!" });
+        return res.json({ success: false, message: "unauthorised access! JsonWebTokenError" });
       }
       if (error.name === "TokenExpiredError") {
         return res.json({

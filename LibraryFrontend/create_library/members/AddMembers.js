@@ -11,13 +11,13 @@ import {
 } from "@gluestack-ui/themed";
 import { StyleSheet } from "react-native";
 
-import FormInput from "../../components/loginSignup/FormInput";
-import FormSubmitButton from "../../components/loginSignup/FormSubmitButton";
-import FormHeader from "../../components/loginSignup/ٖFormHeader";
-import FormTextarea from "../../components/loginSignup/FormTextarea";
-import DatePickerComponent from "../../components/loginSignup/DatePickerComponent";
+import FormInput from "../../components/formElements/FormInput";
+import FormSubmitButton from "../../components/formElements/FormSubmitButton";
+import FormHeader from "../../components/formElements/ٖFormHeader";
+import FormTextarea from "../../components/formElements/FormTextarea";
+import DatePickerComponent from "../../components/formElements/DatePickerComponent";
 import { genderData } from "../../components/popup-menu/data";
-import CustomDropdownComponent from "../../components/loginSignup/CustomDropdownComponent";
+import CustomDropdownComponent from "../../components/formElements/CustomDropdownComponent";
 
 import client from "../../components/api/client";
 import { useLogin } from "../../components/context/LoginProvider";
@@ -33,7 +33,7 @@ const genders = genderData.map((item, index) => {
   return `${item.gender}`;
 });
 
-export default function AddMember() {
+export default function AddMember({ navigation }) {
   const {
     isLoggedin,
     profile,
@@ -157,6 +157,7 @@ export default function AddMember() {
           })
           .finally(() => {
             setIsLoading(false);
+            navigation.navigate("MemberList")
           });
       }
     }

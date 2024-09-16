@@ -6,18 +6,18 @@ import {
   View,
   ImageBackground,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import client from "./api/client";
 import { useLogin } from "./context/LoginProvider";
-import ProgressScreen from "./loginSignup/ProgressScreen";
+import ProgressScreen from "./formElements/ProgressScreen";
 import bgCover from "../assets/images/splash.jpeg"
 
 export default function ImageUpload({ navigation }) {
   const [profileImage, setProfileImage] = useState();
   const [progress, setProgress] = useState(0);
   const { isToken, setProfile } = useLogin();
-
+  
   const openImageLibrary = async () => {
     const response = await ImagePicker.requestMediaLibraryPermissionsAsync();
     const { status } = response;
@@ -44,7 +44,7 @@ export default function ImageUpload({ navigation }) {
   const uploadProfileImage = async () => {
     const imageData = new FormData();
     imageData.append("profile", profileImage);
-    console.log(profileImage);
+    // console.log(profileImage);
     try {
       const res = await client.post("/upload-profile", imageData, {
         headers: {

@@ -1,3 +1,4 @@
 import axios from "axios";
+import { baseURL } from "../popup-menu/data";
 
-export default axios.create({baseURL: "http://192.168.1.4:3001"})
+export default axios.create({baseURL: baseURL})

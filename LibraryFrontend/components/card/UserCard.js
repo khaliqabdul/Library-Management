@@ -11,48 +11,52 @@ import client from "../api/client";
 
 // user card starts
 const UserCard = ({ name, age, gender, phone, CNIC_No, address, id }) => {
-  const {
-    setShowModal,
-    setShowAlert,
-    setMemberData,
-    isLoggedin,
-    memberData,
-    profile,
-  } = useLogin();
+  const { setMemberData, isLoggedin, memberData, profile } =
+    useLogin();
+  const [showAlert, setShowAlert] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const data = {
     memberId: { id: memberData.id },
     registration_id: profile.id,
   };
-  // alertMessage is used in AlertComponent
-  const alertMessage = {
-    title: "Warning",
-    body: "Are you sure you want to delete the member",
-    cancelButtonText: "Cancel",
-    yesButtonText: "Yes",
-    data: memberData.name,
-    onClick: async () => {
-      if (isLoggedin) {
-        await client
-          .post("/deleteReader", data)
-          .then((res) => {
-            alert(res.data.message);
-          })
-          .catch((error) => {
-            console.log("error", error);
-            alert(res.data.message);
-          })
-          .finally(() => {
-            setShowAlert(false);
-          });
-      }
-    },
+  // AlertComponent props
+  const member = memberData.name
+  const onCancelClick = () => {
+    setShowAlert(false);
   };
-
+  const onYesClick = async () => {
+    if (isLoggedin) {
+      await client
+        .post("/deleteReader", data)
+        .then((res) => {
+          alert(res.data.message);
+        })
+        .catch((error) => {
+          console.log("error", error);
+          alert(res.data.message);
+        })
+        .finally(() => {
+          setShowAlert(false);
+        });
+    }
+  };
+  // Modal Component
   const openModal = () => {
     setShowModal(true);
     setMemberData({ id, name });
   };
+  // activate alert
+  const activateAlert = () => {
+    setShowAlert(true);
+    setShowModal(false);
+  };
+  // edit member
+  const editMember = () => {
+    setShowModal(false);
+    console.log("in modal", memberData);
+  };
+
   return (
     <View style={styles.cardContainer}>
       <View style={styles.menuWrapper}>
@@ -72,7 +76,14 @@ const UserCard = ({ name, age, gender, phone, CNIC_No, address, id }) => {
           <Icon color={Colors.dark} icon={faEllipsisVertical} />
         </Pressable>
         {/* Modal component */}
-        <ModalComponent />
+        <ModalComponent
+          showModal={showModal}
+          setShowModal={setShowModal} 
+          activateAlert={activateAlert}
+          function1={editMember}
+          data1="Delete Member"
+          data2="Edit Member"
+        />
       </View>
       <View style={styles.content}>
         <Text style={styles.title}>{name}</Text>
@@ -82,7 +93,18 @@ const UserCard = ({ name, age, gender, phone, CNIC_No, address, id }) => {
         <Text style={styles.text}>{CNIC_No}</Text>
         <Text style={styles.text}>{address}</Text>
       </View>
-      <AlertComponent alertMessage={alertMessage} />
+      {showAlert ? (
+        <AlertComponent
+          title="Warning"
+          showAlert
+          setShowAlert={setShowAlert}
+          onCancelClick={onCancelClick}
+          onYesClick={onYesClick}
+          data={member}
+        >
+          Are you sure you want to delete member
+        </AlertComponent>
+      ) : null}
     </View>
   );
 };

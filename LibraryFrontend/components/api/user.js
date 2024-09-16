@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import client from "./client";
 
-
 // signUp method
 export async function signUp({ ...userInfo }) {
   try {
@@ -20,7 +19,6 @@ export const signIn = async (email, password) => {
       email,
       password,
     });
-
     const { success, token } = signInResponse.data;
     if (!success) {
       return signInResponse;
@@ -45,6 +43,7 @@ export const signOut = async () => {
         },
       });
       if (res.data.success) {
+        alert(res.data.message);
         await AsyncStorage.removeItem("token");
         return true;
       }

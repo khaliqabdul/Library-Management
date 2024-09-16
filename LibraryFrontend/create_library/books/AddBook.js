@@ -8,10 +8,10 @@ import {
   ScrollView,
   useMedia,
 } from "@gluestack-ui/themed";
-import FormHeader from "../../components/loginSignup/ٖFormHeader";
-import FormInput from "../../components/loginSignup/FormInput";
-import FormSubmitButton from "../../components/loginSignup/FormSubmitButton";
-import CustomDropdownComponent from "../../components/loginSignup/CustomDropdownComponent";
+import FormHeader from "../../components/formElements/ٖFormHeader";
+import FormInput from "../../components/formElements/FormInput";
+import FormSubmitButton from "../../components/formElements/FormSubmitButton";
+import CustomDropdownComponent from "../../components/formElements/CustomDropdownComponent";
 import { bookGenre } from "../../components/popup-menu/data";
 import { useLogin } from "../../components/context/LoginProvider";
 import {
@@ -26,7 +26,7 @@ const genreList = bookGenre.map((item, index) => {
   return `${item.genre}`;
 });
 
-const AddBook = () => {
+const AddBook = ({ navigation }) => {
   const {
     isLoggedin,
     profile,
@@ -54,7 +54,6 @@ const AddBook = () => {
 
   const registration_id = profile.id;
   const genre = dropdownSelectedItem;
-  // console.log(image)
   // Reset From
   function resetForm() {
     setInputInfo({
@@ -101,7 +100,7 @@ const AddBook = () => {
         genre,
         image,
       };
-      
+
       if (isLoggedin) {
         await client
           .post(`/addBook`, formData, {
@@ -116,7 +115,7 @@ const AddBook = () => {
             socketServices.emit("add_book", formData);
             resetForm();
             alert(res.data.message);
-            console.log(res.data)
+            // console.log(res.data)
           })
           .catch((err) => {
             console.log("Error", err);
@@ -124,6 +123,7 @@ const AddBook = () => {
           })
           .finally(() => {
             setIsLoading(false);
+            navigation.navigate("BooksList")
           });
       }
     }

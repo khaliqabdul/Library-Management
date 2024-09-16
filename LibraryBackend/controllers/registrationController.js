@@ -57,7 +57,6 @@ const signup = async (req, res) => {
 // signin
 const signIn = async (req, res) => {
   try {
-    // console.log("login data", req.body);
     const { email, password } = req.body;
     if (!email || !password) {
       return res.json({
@@ -65,16 +64,13 @@ const signIn = async (req, res) => {
         message: "Must provide email or password",
       });
     }
-
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.json({
         success: false,
         message: "Invalid email or password! Please try again",
       });
     }
-
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.json({
@@ -109,7 +105,6 @@ const signIn = async (req, res) => {
       email: user.email,
       avatar: user.avatar ? user.avatar : "",
     };
-
     res.json({ success: true, user: userInfo, token });
   } catch (error) {
     console.log(error.message);
@@ -118,7 +113,6 @@ const signIn = async (req, res) => {
 };
 // sign out
 const signOut = async (req, res) => {
-  // console.log("signout",req.headers)
   try {
     if (req.headers && req.headers.authorization) {
       const clientToken = req.headers.authorization.split(" ")[0];
@@ -133,9 +127,10 @@ const signOut = async (req, res) => {
       const filteredToken = databaseTokens.filter(
         (t) => t.token !== clientToken
       );
-      await User.findByIdAndUpdate(req.user._id, { tokens: filteredToken });
-      // console.log(req.user.tokens);
-      res.json({ success: true, message: "Signed Out Successfully!" });
+      const signedOutUser = await User.findByIdAndUpdate(req.user._id, { tokens: filteredToken });
+      
+      const user = `${signedOutUser.firstName} ${signedOutUser.lastName}`
+      res.json({ success: true, message: `${user} You signed out successfully!` });
     }
   } catch (error) {
     console.log("signed out error", error.message);
@@ -147,7 +142,6 @@ const uploadProfileImage = async (req, res) => {
   const { user } = req;
   // console.log(req.file)
   // console.log(req.body)
-
   if (!user)
     return res
       .status(401)
@@ -169,7 +163,6 @@ const uploadProfileImage = async (req, res) => {
     // emit data through socket and received in customDrawerContent.js
     io.emit("send_profile", response);
 
-    // console.log(response)
     res.status(201).json({
       success: true,
       message: "Your profile image has updated",
@@ -189,7 +182,6 @@ const sendProfileToClient = (req, res) => {
   if (!req.user) {
     return res.json({ success: false, message: "unathorided access!" });
   }
-
   res.json({
     success: true,
     profile: {

@@ -1,6 +1,7 @@
 import io from "socket.io-client";
+import { baseURL } from "../popup-menu/data";
 
-const SOCKET_URL = "http://192.168.1.4:3001";
+const SOCKET_URL = baseURL;
 
 class WSService {
   iniliazeSocket = async () => {

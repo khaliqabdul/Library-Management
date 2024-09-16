@@ -5,6 +5,7 @@ const bookSchema = new mongoose.Schema({
   author: {type: String},
   genre: { type: String },
   price: {type: Number},
+  bookIntro: {type: String},
   image: { type: String },
   addedOn: {
     type: Date,
