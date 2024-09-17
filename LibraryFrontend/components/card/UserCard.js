@@ -11,7 +11,7 @@ import client from "../api/client";
 
 // user card starts
 const UserCard = ({ name, age, gender, phone, CNIC_No, address, id }) => {
-  const { setMemberData, isLoggedin, memberData, profile } =
+  const { setMemberData, isLoggedin, memberData, profile, isToken } =
     useLogin();
   const [showAlert, setShowAlert] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -28,7 +28,12 @@ const UserCard = ({ name, age, gender, phone, CNIC_No, address, id }) => {
   const onYesClick = async () => {
     if (isLoggedin) {
       await client
-        .post("/deleteReader", data)
+        .post("/deleteReader", data, {
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `${isToken}`,
+          }
+        })
         .then((res) => {
           alert(res.data.message);
         })

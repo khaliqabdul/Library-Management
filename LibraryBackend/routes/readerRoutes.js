@@ -8,9 +8,9 @@ const readerController = require("../controllers/readerController")
 readerRouter.use(bodyParser.json())
 readerRouter.use(bodyParser.urlencoded({extended: true}))
 // routes
-readerRouter.post('/reader', readerController.createNewReader);
+readerRouter.post('/addReader', authToken, readerController.createNewReader);
 readerRouter.post("/getAllReaders", authToken, readerController.getAllReaders);
-readerRouter.post("/deleteReader", readerController.deleteReader);
+readerRouter.post("/deleteReader", authToken, readerController.deleteReader);
 // readerRouter.get("/blacklisted", authToken, readerController.getBlacklistedReader);
 
 module.exports = readerRouter

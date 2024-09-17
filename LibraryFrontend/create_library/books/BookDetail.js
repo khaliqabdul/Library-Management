@@ -12,7 +12,7 @@ import FormSubmitButton from "../../components/formElements/FormSubmitButton";
 import BookLendingHistory from "./BookLendingHistory";
 
 const BookDetail = ({ navigation }) => {
-  const { bookData, profile, isLoggedin } = useLogin();
+  const { bookData, profile, isLoggedin, isToken } = useLogin();
   const [readers, setReaders] = useState([]); // total readers list
   const [autocompleteQuery, setQuery] = useState(""); // queried words
   const [filteredReader, setFilteredReader] = useState([]); // filtered list
@@ -25,7 +25,7 @@ const BookDetail = ({ navigation }) => {
     reg_id: { id: registration_id },
   };
   const { lendingHistory } = bookData;
-  // console.log(lendingHistory.length)
+  // console.log(readers)
   const NoOfTimeIssued = lendingHistory.length;
 
   // fetch all readers
@@ -35,6 +35,7 @@ const BookDetail = ({ navigation }) => {
         .post("/getAllReaders", data.reg_id, {
           headers: {
             "Content-Type": "application/json",
+            authorization: `${isToken}`
           },
         })
         .then((res) => {

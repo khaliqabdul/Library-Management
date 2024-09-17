@@ -28,7 +28,7 @@ const createNewReader = async (req, res) => {
     address,
     isBlackListed,
   } = req.body;
-
+  
   if (!registration_id)
     return res
       .status(401)

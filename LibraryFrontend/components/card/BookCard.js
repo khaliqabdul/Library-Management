@@ -18,7 +18,7 @@ const BookCard = ({
   lendingHistory,
   navigation,
 }) => {
-  const { isLoggedin, profile, setBookData } = useLogin();
+  const { isLoggedin, profile, setBookData, isToken } = useLogin();
   const [showAlert, setShowAlert] = useState(false);
   const [selectedBook, setSelectedBook] = useState();
   const [showModal, setShowModal] = useState(false);
@@ -77,7 +77,12 @@ const BookCard = ({
   const onYesClick = async () => {
     if (isLoggedin) {
       await client
-        .post("/deleteBook", data)
+        .post("/deleteBook", data, {
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `${isToken}`,
+          },
+        })
         .then((res) => {
           alert(res.data.message);
         })

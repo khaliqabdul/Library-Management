@@ -40,6 +40,7 @@ export default function AddMember({ navigation }) {
     dropdownSelectedItem,
     setDropdownSelectedItem,
     dateOfBirth,
+    isToken,
   } = useLogin();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -144,7 +145,12 @@ export default function AddMember({ navigation }) {
       };
       if (isLoggedin) {
         await client
-          .post(`/reader`, data.member)
+          .post(`/addReader`, data.member, {
+            headers: {
+              "Content-Type": "application/json",
+              authorization: `${isToken}`,
+            },
+          })
           .then((res) => {
             // listen in readerController
             socketServices.emit("add_member", data.member);

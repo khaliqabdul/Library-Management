@@ -12,7 +12,7 @@ bookRouter.use(bodyParser.urlencoded({ extended: true, parameterLimit: 1000000, 
 
 bookRouter.post("/addBook", bookController.addBook);
 bookRouter.post("/booksList",authToken, bookController.booksList);
-bookRouter.post("/deleteBook", bookController.deleteBook);
+bookRouter.post("/deleteBook",authToken, bookController.deleteBook);
 bookRouter.post("/lendBook", bookController.setAsLended);
 bookRouter.post("/returnBook", bookController.setAsReturned);
 
