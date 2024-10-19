@@ -3,21 +3,27 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  View,
+  // View,
   ImageBackground,
 } from "react-native";
+import { useMedia, View } from "@gluestack-ui/themed";
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
-import client from "./api/client";
-import { useLogin } from "./context/LoginProvider";
-import ProgressScreen from "./formElements/ProgressScreen";
-import bgCover from "../assets/images/splash.jpeg"
+import client from "../api/client";
+import { useLogin } from "../context/LoginProvider";
+import ProgressScreen from "../formElements/ProgressScreen";
+import bgCover from "../../assets/images/splash.jpeg";
+import ProfileText from "./ProfileText";
+import RoundImage from "./RoundImage";
 
-export default function ImageUpload({ navigation }) {
+export default function ProfileScreen({ navigation }) {
   const [profileImage, setProfileImage] = useState();
   const [progress, setProgress] = useState(0);
-  const { isToken, setProfile } = useLogin();
-  
+  const { isToken, setProfile, profile } = useLogin();
+  const { firstName, lastName, libraryName, avatar } = profile;
+  const userName = `${firstName} ${lastName}`;
+  const image = require("../../assets/images/userAvatar.png");
+
   const openImageLibrary = async () => {
     const response = await ImagePicker.requestMediaLibraryPermissionsAsync();
     const { status } = response;
@@ -70,31 +76,45 @@ export default function ImageUpload({ navigation }) {
       console.log("err", error.message);
     }
   };
-
+  const media = useMedia();
   return (
-    <ImageBackground source={bgCover} style={{flex: 1}} resizeMode="cover">
-      <View style={styles.container}>
-        {progress ? <ProgressScreen process={progress} /> : null}
-        <View style={styles.innerContainer}>
-          <Pressable
-            onPress={openImageLibrary}
-            style={styles.uploadBtnContainer}
-          >
-            {profileImage ? (
-              <Image
-                source={{ uri: profileImage.uri }}
-                style={{ width: "100%", height: "100%" }}
-              />
-            ) : (
-              <Text style={styles.UploadBtnText}>Upload Profile Image</Text>
-            )}
-          </Pressable>
-          <Text style={styles.skipText}>Skip</Text>
+    <ImageBackground style={{ flex: 1 }} resizeMode="cover">
+      <View
+        style={styles.container}
+        width={media.lg ? "$1/3" : "$full"}
+        marginRight={"auto"}
+        marginLeft={"auto"}
+      >
+        <View style={styles.editProfile}>
+          <Text style={styles.editProfileButton}>Edit Profile</Text>
+        </View>
+
+        {/* <RoundImage/> */}
+
+        {/* prfile image section */}
+        <View style={styles.topSection}>
+          {progress ? <ProgressScreen process={progress} /> : null}
+          <View style={styles.picSection}>
+            <Pressable onPress={openImageLibrary} style={styles.picSection}>
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage.uri }}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              ) : (
+                <Image
+                  source={avatar == null ? image : { uri: avatar }}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              )}
+            </Pressable>
+          </View>
+          <Text style={styles.nameText}>{libraryName}</Text>
           {profileImage ? (
             <Text
               onPress={uploadProfileImage}
               style={[
-                styles.skipText,
+                styles.nameText,
                 { backgroundColor: "green", borderRadius: 8, color: "white" },
               ]}
             >
@@ -102,6 +122,8 @@ export default function ImageUpload({ navigation }) {
             </Text>
           ) : null}
         </View>
+        {/* profile text section */}
+        <ProfileText />
       </View>
     </ImageBackground>
   );
@@ -110,32 +132,58 @@ export default function ImageUpload({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "black",
+  },
+  topSection: {
+    height: 300,
     justifyContent: "center",
     alignItems: "center",
+    // backgroundColor: "green",
   },
-  uploadBtnContainer: {
-    height: 125,
-    width: 125,
-    borderRadius: 125 / 2,
-    borderStyle: "dashed",
-    borderWidth: 1,
+  picSection: {
+    height: 150,
+    width: 150,
+    borderRadius: 150 / 2,
+    borderStyle: "solid",
+    borderColor: "#FFBB3B",
+    borderWidth: 4,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
   },
   UploadBtnText: {
     textAlign: "center",
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "bold",
     opacity: 0.3,
+    color: "white",
   },
-  skipText: {
+  nameText: {
     textAlign: "center",
     padding: 10,
     fontSize: 16,
     fontWeight: "bold",
     textTransform: "uppercase",
     letterSpacing: 2,
-    opacity: 0.5,
+    // opacity: 0.5,
+    color: "white",
+    marginTop: 10,
+  },
+  editProfile: {
+    width: "100%",
+    height: 40,
+    marginTop: 5,
+    justifyContent: "center",
+    alignItems: "flex-end",
+  },
+  editProfileButton: {
+    color: "white",
+    marginRight: 10,
+    paddingBottom: 10,
+    paddingTop: 10,
+    paddingHorizontal: 10,
+    borderRadius: 30,
+    borderColor: "white",
+    borderWidth: 1,
   },
 });

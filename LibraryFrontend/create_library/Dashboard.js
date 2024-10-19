@@ -5,7 +5,7 @@ import { useWindowDimensions, StyleSheet } from "react-native";
 import CustomDrawerContent from "./CustomDrawerContent";
 import AddMember from "./members/AddMembers";
 import Colors from "../components/Colors";
-import ImageUpload from "../components/ImageUpload";
+import ProfileScreen from "../components/profile/ProfileScreen";
 import MembersList from "./members/MembersList";
 import Chat from "./chat/Chat";
 import BooksList from "./books/BooksList";
@@ -58,7 +58,7 @@ export default function Dashboard() {
           drawerLabelStyle: styles.drawerLabelStyles,
         }}
       >
-        <Drawer.Screen name="HomeScreen" component={ImageUpload} />
+        <Drawer.Screen name="HomeScreen" component={ProfileScreen} />
         <Drawer.Screen name="Notifications" component={Chat} />
         <Drawer.Screen name="BooksList" component={BooksList} />
         <Drawer.Screen name="addBook" component={AddBook} />

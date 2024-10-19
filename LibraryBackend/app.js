@@ -5,7 +5,11 @@ var cors = require("cors");
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "*"   // can connect all http requests
+  }
+});
 global.io = io;
 
 const connectDB = require("./db/connectdb");
@@ -47,13 +51,23 @@ const corsOrigin = {
 app.use(cors(corsOrigin));
 
 // socket
-io.on("connection", (socket) => {
-  console.log("socket connected! in app");
+// io.on("connection", (socket) => {
+//   console.log("socket connected! in app", socket.id);
 
-  socket.on("send_message", (msg) => {
-    io.emit("receive_message", msg);
-  });
-});
+//   socket.on("join room", (chatId) => {
+//     socket.join(chatId)
+//     console.log(`User ${socket.id} joined chat room ${chatId}`)
+//   })
+
+//   socket.on("send_message", (msg) => {
+//     io.emit("receive_message", msg);
+//     // io.to().emit()
+//   });
+
+//   socket.on("disconnect", () => {
+//     console.log("socket disconnected...")
+//   })
+// });
 
 server.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);

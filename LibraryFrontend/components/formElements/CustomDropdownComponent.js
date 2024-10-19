@@ -10,7 +10,6 @@ import React, { useRef, useState } from "react";
 import { faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 import Icon from "../Icons";
 import Colors from "../Colors";
-import { useLogin } from "../context/LoginProvider";
 import {
   Modal,
   ModalContent,
@@ -23,14 +22,17 @@ import {
   // Icon,
 } from "@gluestack-ui/themed";
 
-const CustomDropdownComponent = (props) => {
-  const { dropdownList, inputLabel, value, error } = props;
-  const { setDropdownSelectedItem } = useLogin();
-  // const [selectedItem, setSelectedItem] = useState("Select Gender");
+const CustomDropdownComponent = ({
+  fetchItem = () => {},
+  dropdownList,
+  inputLabel = "",
+  value = "",
+  error,
+}) => {
   const [isClicked, setIsClicked] = useState(false);
   const [data, setData] = useState(dropdownList);
   const searchRef = useRef();
-  // console.log(data)
+
   const onSearch = (text) => {
     if (text !== "") {
       let tempData = data.filter((item) => {
@@ -41,6 +43,29 @@ const CustomDropdownComponent = (props) => {
       setData(dropdownList);
     }
   };
+  // flatlist render item function
+  const renderItem = ({ item, index }) => {
+    return (
+      <>
+        <Pressable
+          style={styles.dropdownItem}
+          onPress={() => {
+            onSelectItem(item);
+            onSearch("");
+            setIsClicked(false);
+            searchRef.current.clear();
+          }}
+        >
+          <Text style={{ fontWeight: "600" }}>{item}</Text>
+        </Pressable>
+      </>
+    );
+  };
+
+  const onSelectItem = (item) => {
+    fetchItem(item);
+  };
+
   return (
     <View style={styles.container}>
       {/* Label */}
@@ -89,23 +114,7 @@ const CustomDropdownComponent = (props) => {
                 <FlatList
                   data={data}
                   scrollEnabled={false}
-                  renderItem={({ item, index }) => {
-                    return (
-                      <>
-                        <Pressable
-                          style={styles.dropdownItem}
-                          onPress={() => {
-                            setDropdownSelectedItem(item);
-                            onSearch("");
-                            setIsClicked(false);
-                            searchRef.current.clear();
-                          }}
-                        >
-                          <Text style={{ fontWeight: "600" }}>{item}</Text>
-                        </Pressable>
-                      </>
-                    );
-                  }}
+                  renderItem={renderItem}
                 />
               </View>
             </ModalBody>
@@ -147,11 +156,7 @@ const styles = StyleSheet.create({
   },
   dropdownArea: {
     width: "100%",
-    // borderBottomEndRadius: 10,
-    // borderBottomLeftRadius: 10,
     marginTop: 10,
-    // backgroundColor: Colors.menu2,
-    // elevation: 10,
     alignSelf: "center",
   },
   searchInput: {

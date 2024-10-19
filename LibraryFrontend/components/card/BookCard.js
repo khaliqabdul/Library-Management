@@ -116,11 +116,11 @@ const BookCard = ({
             <View style={styles.icons}>
               {/* edit icon */}
               <Pressable style={styles.circle} onPress={() => {}}>
-                <Icon icon={faEdit} />
+                <Icon icon={faEdit}  />
               </Pressable>
               {/* delete icon */}
               <Pressable style={styles.circle} onPress={() => activateAlert()}>
-                <Icon icon={faTrash} />
+                <Icon icon={faTrash}/>
               </Pressable>
               {/* listDots icon */}
               <Pressable style={styles.circle} onPress={() => openModal()}>

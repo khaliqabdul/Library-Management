@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 const LoginContext = createContext();
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import client from "../api/client";
-// import socketServices from "../utils/socketService";
 
 const LoginProvider = ({ children }) => {
   const [isLoggedin, setIsLoggedIn] = useState(false);
@@ -11,10 +10,15 @@ const LoginProvider = ({ children }) => {
   const [loginPending, setLoginPending] = useState(false);
   const [showDateModal, setShowDateModal] = useState(false);
   const [memberData, setMemberData] = useState({});
-  const [dropdownSelectedItem, setDropdownSelectedItem] = useState("Select");
   const [dateOfBirth, setDateOfBirth] = useState();
   const [image, setImage] = useState(null);
   const [bookData, setBookData] = useState({});
+  const [selectedCountry, setSelectedCountry] = useState({
+    country: "Pakistan",
+    code: "92",
+    iso: "PK",
+  });
+
   const fetchUser = async () => {
     setLoginPending(true);
     const token = await AsyncStorage.getItem("token");
@@ -59,14 +63,14 @@ const LoginProvider = ({ children }) => {
         setShowDateModal,
         memberData,
         setMemberData,
-        dropdownSelectedItem,
-        setDropdownSelectedItem,
         dateOfBirth,
         setDateOfBirth,
         image,
         setImage,
         bookData,
         setBookData,
+        selectedCountry,
+        setSelectedCountry
       }}
     >
       {children}

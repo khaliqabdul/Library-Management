@@ -1,41 +1,43 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  Text,
-  ActivityIndicator,
-} from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { FlatList, StyleSheet, Text, ActivityIndicator } from "react-native";
 import client from "../../components/api/client";
 import socketServices from "../../components/utils/socketService";
 import { useMedia } from "@gluestack-style/react";
-import Icon from "../../components/Icons";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import FormInput from "../../components/formElements/FormInput";
 import BookCard from "../../components/card/BookCard";
 import { useLogin } from "../../components/context/LoginProvider";
+import SearchComponent from "../../components/searchComponent/SearchComponent";
+import {
+  textScale,
+  moderateScale,
+} from "../../components/styles/responsiveSize";
+import ListEmptyComponent from "../../components/listEmptyComponent/ListEmptyComponent";
 
 const BooksList = ({ navigation }) => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const searchRef = useRef();
   const { profile, isLoggedin, isToken } = useLogin();
   const registration_id = profile.id;
   const data = {
     librarianId: { id: registration_id },
   };
-
   useEffect(() => {
     socketServices.iniliazeSocket();
-    getBooks();
   }, []);
 
   useEffect(() => {
+    socketServices.emit("join room", registration_id);
     // listen from bookController
     socketServices.on("send_booksList", (data) => {
       setBooks(data);
     });
+    socketServices.on("delete_book", (data) => {
+      setBooks(data);
+    });
+    return () => {
+      socketServices.removeListener("send_booksList");
+      socketServices.removeListener("delete_book");
+    };
   }, [books]);
 
   const searchTextHandler = (text) => {
@@ -49,6 +51,17 @@ const BooksList = ({ navigation }) => {
     }
   };
 
+  const listEmptyComponent = useCallback(() => {
+    return (
+      <ListEmptyComponent
+        navigation={navigation}
+        text="Tap below button to add books!"
+        screen="addBook"
+        buttonTitle="Add Book"
+      />
+    );
+  }, [books]);
+
   async function getBooks() {
     if (isLoggedin) {
       await client
@@ -59,7 +72,7 @@ const BooksList = ({ navigation }) => {
           },
         })
         .then((res) => {
-          alert(res.data.message)
+          // alert(res.data.message)
           setBooks(res.data.booksList);
         })
         .catch((err) => {
@@ -71,7 +84,12 @@ const BooksList = ({ navigation }) => {
         });
     }
   }
+  useEffect(() => {
+    getBooks();
+  }, []);
+
   const media = useMedia();
+
   return (
     <>
       {loading || error ? (
@@ -85,22 +103,13 @@ const BooksList = ({ navigation }) => {
             numColumns={media.lg ? 3 : 1}
             ListHeaderComponent={
               <>
-                {/* header */}
-                <Text style={styles.headerText}>Book's List</Text>
-                {/* search box */}
-                <View style={{ marginTop: 5 }}>
-                  <View style={styles.iconContainer}>
-                    <Icon icon={faSearch} />
-                  </View>
-                  <FormInput
-                    placeholder="Search"
-                    marginHorizontal={20}
-                    reference={searchRef}
-                    onChangeText={(text) => searchTextHandler(text)}
-                  />
-                </View>
+                <SearchComponent
+                  headerText="Book's List"
+                  searchTextHandler={searchTextHandler}
+                />
               </>
             }
+            ListEmptyComponent={listEmptyComponent}
             data={books}
             renderItem={({ item }) => (
               <BookCard {...item} navigation={navigation} />
@@ -115,32 +124,10 @@ const BooksList = ({ navigation }) => {
 export default BooksList;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: "10%",
-  },
   errorMsg: {
     color: "#ee8888",
-    fontSize: 20,
-    padding: 24,
+    fontSize: textScale(20),
+    padding: moderateScale(24),
     textAlign: "center",
-  },
-
-  // List Header
-  headerText: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 10,
-    marginLeft: 20,
-    letterSpacing: 1,
-  },
-  iconContainer: {
-    position: "absolute",
-    top: 35,
-    right: 30,
-    width: 30,
-    height: 30,
-    borderRadius: 50,
-    // backgroundColor: 'green'
   },
 });

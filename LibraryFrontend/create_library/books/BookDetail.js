@@ -10,6 +10,7 @@ import AutoCompleteInput from "../../components/formElements/AutoCompleteInput";
 import client from "../../components/api/client";
 import FormSubmitButton from "../../components/formElements/FormSubmitButton";
 import BookLendingHistory from "./BookLendingHistory";
+import socketServices from "../../components/utils/socketService";
 
 const BookDetail = ({ navigation }) => {
   const { bookData, profile, isLoggedin, isToken } = useLogin();
@@ -19,14 +20,18 @@ const BookDetail = ({ navigation }) => {
   const [selectedReader, setSelectedReader] = useState(null); // selected reader
   const [loading, setLoading] = useState(false);
   const [currentLender, setCurrentLender] = useState(null);
-
+  const [bookLendingHistory, setBookLendingHistory] = useState();
+  
   const registration_id = profile.id;
   const data = {
     reg_id: { id: registration_id },
   };
   const { lendingHistory } = bookData;
-  // console.log(readers)
-  const NoOfTimeIssued = lendingHistory.length;
+
+  const NoOfTimeIssued =
+    bookLendingHistory == undefined || !bookLendingHistory
+      ? lendingHistory.length
+      : bookLendingHistory.length;
 
   // fetch all readers
   async function fetchReaderData() {
@@ -35,7 +40,7 @@ const BookDetail = ({ navigation }) => {
         .post("/getAllReaders", data.reg_id, {
           headers: {
             "Content-Type": "application/json",
-            authorization: `${isToken}`
+            authorization: `${isToken}`,
           },
         })
         .then((res) => {
@@ -52,9 +57,21 @@ const BookDetail = ({ navigation }) => {
   }
 
   useEffect(() => {
+    socketServices.iniliazeSocket();
+  }, []);
+
+  useEffect(() => {
+    socketServices.emit("join room", registration_id);
+    // listen from bookController
+    socketServices.on("sendTo_bookDetail", (data) => {
+      setBookLendingHistory(data);
+    });
     const xyz = getCurrentLender(lendingHistory);
     setCurrentLender(xyz);
     fetchReaderData();
+    return () => {
+      socketServices.removeListener("sendTo_bookDetail");
+    }
   }, [lendingHistory]);
 
   useEffect(() => {
@@ -70,6 +87,7 @@ const BookDetail = ({ navigation }) => {
       setFilteredReader(matchingReaders);
     }
   }, [autocompleteQuery]);
+
   // lend book request
   const setAsLended = async () => {
     const data = {

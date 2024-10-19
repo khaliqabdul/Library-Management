@@ -27,17 +27,16 @@ export default function FormInput(props) {
     focus,
     marginHorizontal,
     maxLength,
+    inputRef,
   } = props;
-  // console.log(value)
   const [showPassword, setShowpassword] = useState(false);
-  // const { showModal, setShowDateModal } = useLogin();
 
   const handleState = () => {
     setShowpassword((showState) => {
       return !showState;
     });
   };
-
+  
   return (
     <FormControl>
       <HStack>
@@ -51,6 +50,7 @@ export default function FormInput(props) {
       <Input style={[styles.input, { marginHorizontal: marginHorizontal }]}>
         <InputField
           {...props}
+          ref={inputRef}
           type={!showPassword ? type : null}
           placeholder={placeholder}
           onFocus={focus}

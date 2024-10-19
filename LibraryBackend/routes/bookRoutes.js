@@ -10,7 +10,7 @@ bookRouter.use(bodyParser.json());
 bookRouter.use(bodyParser.urlencoded({ extended: true, parameterLimit: 1000000, limit: "5000mb"}));
 // bookRouter.use(bodyParser.text({ limit: '10000mb' }));
 
-bookRouter.post("/addBook", bookController.addBook);
+bookRouter.post("/addBook", authToken, bookController.addBook);
 bookRouter.post("/booksList",authToken, bookController.booksList);
 bookRouter.post("/deleteBook",authToken, bookController.deleteBook);
 bookRouter.post("/lendBook", bookController.setAsLended);

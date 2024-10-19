@@ -3,11 +3,9 @@ import {
   FormControl,
   View,
   VStack,
-  HStack,
   Spinner,
   ScrollView,
   useMedia,
-  Box,
 } from "@gluestack-ui/themed";
 import { StyleSheet } from "react-native";
 
@@ -18,6 +16,7 @@ import FormTextarea from "../../components/formElements/FormTextarea";
 import DatePickerComponent from "../../components/formElements/DatePickerComponent";
 import { genderData } from "../../components/popup-menu/data";
 import CustomDropdownComponent from "../../components/formElements/CustomDropdownComponent";
+import PhoneNumber from "../../components/phoneNumber/PhoneNumber";
 
 import client from "../../components/api/client";
 import { useLogin } from "../../components/context/LoginProvider";
@@ -37,25 +36,24 @@ export default function AddMember({ navigation }) {
   const {
     isLoggedin,
     profile,
-    dropdownSelectedItem,
-    setDropdownSelectedItem,
     dateOfBirth,
     isToken,
+    selectedCountry,
   } = useLogin();
+  const [gender, setGender] = useState("Select gender");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false); //used in mobile no
   const pattern = new RegExp(/^\d{1,10}$/);
   const [inputInfo, setInputInfo] = useState({
     name: "",
-    countryCode: "",
     phoneNumber: "",
     cnicNumber: "",
     address: "",
   });
-  const { name, address, phoneNumber, countryCode, cnicNumber } = inputInfo;
+  const { name, address, phoneNumber, cnicNumber } = inputInfo;
+  const mobileNumber = selectedCountry.code + "" + phoneNumber;
   const registration_id = profile.id;
-  const gender = dropdownSelectedItem;
   const birthDate = dateOfBirth;
 
   const getAge = (birthDate) => {
@@ -64,7 +62,6 @@ export default function AddMember({ navigation }) {
     );
   };
   const age = getAge(birthDate);
-  const mobileNumber = `+${countryCode}${phoneNumber}`;
 
   useEffect(() => {
     socketServices.iniliazeSocket();
@@ -84,12 +81,11 @@ export default function AddMember({ navigation }) {
   function resetForm() {
     setInputInfo({
       name: "",
-      countryCode: "",
       phoneNumber: "",
       cnicNumber: "",
       address: "",
     });
-    setDropdownSelectedItem("Select");
+    setGender("Select gender");
   }
   // form validation
   const isvalidForm = () => {
@@ -108,10 +104,6 @@ export default function AddMember({ navigation }) {
     // gender validation
     if (gender == "Select") {
       return updateError("Empty Field", setError);
-    }
-    // country code validation
-    if (!countryCode.trim() || countryCode.length < 2) {
-      return updateError("invalid code", setError);
     }
     // mobile No validation
     if (!isvalidMobileNo(phoneNumber)) {
@@ -153,7 +145,7 @@ export default function AddMember({ navigation }) {
           })
           .then((res) => {
             // listen in readerController
-            socketServices.emit("add_member", data.member);
+            socketServices.emit("add_member", registration_id);
             resetForm();
             alert(res.data.message);
           })
@@ -163,11 +155,16 @@ export default function AddMember({ navigation }) {
           })
           .finally(() => {
             setIsLoading(false);
-            navigation.navigate("MemberList")
+            navigation.navigate("MemberList");
           });
       }
     }
   }
+
+  const fetchItem = (item) => {
+    setGender(item);
+  };
+
   return (
     <>
       <View
@@ -200,50 +197,20 @@ export default function AddMember({ navigation }) {
               inputLabel="Date of Birth"
               error={!birthDate ? error : null}
             />
-            {/* Gender dropdown */}
+            {/* Gender */}
             <CustomDropdownComponent
               dropdownList={genders}
               inputLabel="Gender"
               value={gender}
-              error={gender == "Select" ? error : null}
+              fetchItem={fetchItem}
+              error={gender == "Select gender" ? error : null}
             />
             {/* Phone Number */}
-            <HStack space="md" reversed={false}>
-              <Box w="30%">
-                <FormInput
-                  inputLabel="Code"
-                  rightInputLabel=""
-                  placeholder="92"
-                  keyboardType="numeric"
-                  maxLength={5}
-                  value={countryCode}
-                  onChangeText={(value) =>
-                    onChangeTextHandler(value, "countryCode")
-                  }
-                  error={
-                    !countryCode.trim() || countryCode.length < 2 ? error : null
-                  }
-                />
-              </Box>
-              <Box w="65%">
-                <FormInput
-                  inputLabel="Mobile No."
-                  rightInputLabel={
-                    isError || mobileNumber.length < 13
-                      ? "Invalid No"
-                      : mobileNumber
-                  }
-                  placeholder="0000000000"
-                  keyboardType="numeric"
-                  maxLength={10}
-                  value={phoneNumber}
-                  onChangeText={(value) =>
-                    onChangeTextHandler(value, "phoneNumber")
-                  }
-                  error={!isvalidMobileNo(phoneNumber) ? error : null}
-                />
-              </Box>
-            </HStack>
+            <PhoneNumber
+              onChangeTextHandler={onChangeTextHandler}
+              error={!phoneNumber ? error : null}
+              value={phoneNumber}
+            />
             {/* CNIC No */}
             <FormInput
               inputLabel="CNIC No."

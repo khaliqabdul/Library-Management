@@ -2,20 +2,27 @@ const mongoose = require("mongoose");
 const Book = require("../models/bookModal");
 const User = mongoose.model("Registration");
 const ObjectId = require("mongodb").ObjectId;
-
+// socket io
 global.io.on("connection", (socket) => {
-  console.log("socket connected in book controllers!");
+  // console.log("socket connected in book controllers!");
 
+  // create room
+  socket.on("join room", (registration_id) => {
+    socket.join(registration_id)
+  })
   // listen from addBook.js
-  socket.on("add_book", async function (data) {
-    // var _id = new ObjectId(data.registration_id);
-    // const user = await User.findById({ _id }).populate("reader_id");
+  socket.on("add_book", async function (registration_id) {
+    var _id = new ObjectId(registration_id);
+    const user = await User.findById({ _id }).populate("book_id");
+    // send data to BooksList component
+    io.to(registration_id).emit("send_booksList", user.book_id);
   });
 });
 
 // add book
 const addBook = async (req, res) => {
   const { registration_id, bookTitle, author, genre, price, image } = req.body;
+  // console.log(bookTitle)
   if (!registration_id)
     return res
       .status(401)
@@ -37,13 +44,11 @@ const addBook = async (req, res) => {
       }
     );
 
-    const librarianData = await User.findById({
-      _id: registration_id,
-    }).populate("book_id");
-    const booksList = librarianData.book_id;
-    // send data to BooksList component
-    io.emit("send_booksList", booksList);
-
+    // const librarianData = await User.findById({
+    //   _id: registration_id,
+    // }).populate("book_id");
+    // const booksList = librarianData.book_id;
+    
     return res.send({
       success: true,
       message: `book ${bookData.bookTitle} added successfully!`,
@@ -57,6 +62,7 @@ const addBook = async (req, res) => {
 // Books List
 const booksList = async (req, res) => {
   const { id } = req.body;
+  // console.log(id)
   if (!id)
     return res
       .status(401)
@@ -65,9 +71,6 @@ const booksList = async (req, res) => {
   try {
     const librarianData = await User.findById({ _id: id }).populate("book_id");
     const booksList = librarianData.book_id;
-
-    // lesten in BooksList component
-    io.emit("send_booksList", booksList);
 
     return res.send({
       success: true,
@@ -101,7 +104,7 @@ const deleteBook = async (req, res) => {
       }).populate("book_id");
       const newBooksList = librarianData.book_id;
       // lesten in BooksList component
-      io.emit("send_booksList", newBooksList);
+      io.to(registration_id).emit("delete_book", newBooksList);
 
       return res.send({
         success: true,
@@ -136,9 +139,9 @@ const setAsLended = async (req, res) => {
       );
       const newBooksList = librarianData.book_id;
       // listen in BooksList component
-      io.emit("send_booksList", newBooksList);
+      io.to(reg_id).emit("send_booksList", newBooksList);
       // listen in BookLendingHistory component
-      io.emit("sendTo_bookDetail", lendBook.lendingHistory);
+      io.to(reg_id).emit("sendTo_bookDetail", lendBook.lendingHistory);
       const currentLender = lendBook.lendingHistory.pop();
       return res.send({
         success: true,
@@ -174,9 +177,9 @@ const setAsReturned = async (req, res) => {
       );
       const newBooksList = librarianData.book_id;
       // lesten in BooksList component
-      io.emit("send_booksList", newBooksList);
+      io.to(reg_id).emit("send_booksList", newBooksList);
       // listen in BookLendingHistory component
-      io.emit("sendTo_bookDetail", returnBook.lendingHistory);
+      io.to(reg_id).emit("sendTo_bookDetail", returnBook.lendingHistory);
       const lastReader = returnBook.lendingHistory.pop();
       return res.send({
         success: true,

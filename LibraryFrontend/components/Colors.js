@@ -13,7 +13,7 @@ export default {
     pink: "#ff4c98",
     gold: "#f8c907",
     gray: "#9C9C9C",
-    menu1: "#f9a3b3",
+    menu1: "#0096FF",
     menu2: "#81c3eb",
     menu3: "#facd94",
     dark: "#010101",

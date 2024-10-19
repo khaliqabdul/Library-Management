@@ -7,12 +7,25 @@ const cloudinary = require("../cloudinary/imageUpload");
 const User = mongoose.model("Registration");
 
 global.io.on("connection", (socket) => {
-  console.log("socket connected in registration controllers!");
+  // console.log("socket connected in registration controllers!");
+
+  socket.on("join room", (registration_id) => {
+    socket.join(registration_id);
+  });
 });
 
 // Registration or signup
 const signup = async (req, res) => {
-  const { firstName, lastName, email, password, confirmPassword } = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    confirmPassword,
+    gender,
+    libraryName,
+    libraryAddress,
+  } = req.body;
 
   const isAlreadyHasEmail = await User.findOne({ email });
   if (!isAlreadyHasEmail || !isAlreadyHasEmail.email) {
@@ -26,6 +39,9 @@ const signup = async (req, res) => {
     const user = new User({
       firstName,
       lastName,
+      gender,
+      libraryName,
+      libraryAddress,
       email,
       password,
       confirmPassword,
@@ -39,6 +55,9 @@ const signup = async (req, res) => {
     const userInfo = {
       firstName: user.firstName,
       lastName: user.lastName,
+      gender: user.gender,
+      libraryName: user.libraryName,
+      libraryAddress: user.libraryAddress,
       email: user.email,
       avatar: user.avatar ? user.avatar : "",
     };
@@ -102,13 +121,28 @@ const signIn = async (req, res) => {
       id: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
+      gender: user.gender,
+      libraryName: user.libraryName,
+      libraryAddress: user.libraryAddress,
       email: user.email,
-      avatar: user.avatar ? user.avatar : "",
+      avatar: user.avatar ? user.avatar : null,
     };
-    res.json({ success: true, user: userInfo, token });
+    res.json({
+      success: true,
+      user: userInfo,
+      token,
+      message: "Logged in Successfully",
+    });
   } catch (error) {
-    console.log(error.message);
-    return res.send(error.message);
+    let status_code = error.status.code != undefined ? error.status_code : 500;
+    let type = error.type != undefined ? error.type : "Bad Request";
+    return res.status(status_code).send({
+      success: false,
+      error: type,
+      message: error.message,
+    });
+    // console.log(error.message);
+    // return res.send(error.message);
   }
 };
 // sign out
@@ -127,10 +161,15 @@ const signOut = async (req, res) => {
       const filteredToken = databaseTokens.filter(
         (t) => t.token !== clientToken
       );
-      const signedOutUser = await User.findByIdAndUpdate(req.user._id, { tokens: filteredToken });
-      
-      const user = `${signedOutUser.firstName} ${signedOutUser.lastName}`
-      res.json({ success: true, message: `${user} You signed out successfully!` });
+      const signedOutUser = await User.findByIdAndUpdate(req.user._id, {
+        tokens: filteredToken,
+      });
+
+      const user = `${signedOutUser.firstName} ${signedOutUser.lastName}`;
+      res.json({
+        success: true,
+        message: `${user} You signed out successfully!`,
+      });
     }
   } catch (error) {
     console.log("signed out error", error.message);
@@ -161,7 +200,7 @@ const uploadProfileImage = async (req, res) => {
       { new: true }
     );
     // emit data through socket and received in customDrawerContent.js
-    io.emit("send_profile", response);
+    io.to(user._id).emit("send_profile", response);
 
     res.status(201).json({
       success: true,
@@ -188,6 +227,9 @@ const sendProfileToClient = (req, res) => {
       id: req.user._id,
       firstName: req.user.firstName,
       lastName: req.user.lastName,
+      gender: req.user.gender,
+      libraryName: user.libraryName,
+      libraryAddress: user.libraryAddress,
       email: req.user.email,
       avatar: req.user.avatar ? req.user.avatar : "",
     },

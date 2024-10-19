@@ -16,6 +16,9 @@ const registrationSchema = new mongoose.Schema({
     email: {type: String, unique: true, required: true, trim: true},
     password: {type:String, required: true},
     confirmPassword: {type: String, required: true},
+    gender: {type: String},
+    libraryName: {type: String},
+    libraryAddress: {type: String},
     avatar: String,
     tokens: [{type: Object}]
 });

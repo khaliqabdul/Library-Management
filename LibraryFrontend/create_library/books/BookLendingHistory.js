@@ -5,16 +5,20 @@ import { useLogin } from "../../components/context/LoginProvider";
 import socketServices from "../../components/utils/socketService";
 
 const BookLendingHistory = () => {
-  const { bookData } = useLogin();
+  const { bookData, profile } = useLogin();
   const [bookLendingHistory, setBookLendingHistory] = useState()
   const { lendingHistory } = bookData;
-  // console.log(bookLendingHistory)
+  
+  const registration_id = profile.id;
+
   useEffect(() => {
     socketServices.iniliazeSocket();
     setBookLendingHistory(lendingHistory)
   }, [lendingHistory]);
 
   useEffect(() => {
+    socketServices.emit("join room", registration_id)
+    // listen from bookController
     socketServices.on("sendTo_bookDetail", (data) => {
       setBookLendingHistory(data)
     });

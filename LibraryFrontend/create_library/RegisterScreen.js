@@ -20,18 +20,35 @@ import {
 import LoadingScreen from "../components/formElements/LoadingScreen";
 import { useLogin } from "../components/context/LoginProvider";
 import { signUp } from "../components/api/user";
+import CustomDropdownComponent from "../components/formElements/CustomDropdownComponent";
+import { genderData } from "../components/popup-menu/data";
+
+const genders = genderData.map((item, index) => {
+  return `${item.gender}`;
+});
 
 export default function RegisterScreen({ navigation }) {
   const { loginPending, setLoginPending } = useLogin();
+  const [gender, setGender] = useState("Select gender");
   const [userInfo, setUserInfo] = useState({
     firstName: "",
     lastName: "",
+    libraryName: "",
+    libraryAddress: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
   const [error, setError] = useState("");
-  const { firstName, lastName, email, password, confirmPassword } = userInfo;
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    confirmPassword,
+    libraryName,
+    libraryAddress,
+  } = userInfo;
 
   const handleOnChangeText = (value, fieldName) => {
     setUserInfo({ ...userInfo, [fieldName]: value });
@@ -44,16 +61,19 @@ export default function RegisterScreen({ navigation }) {
     setUserInfo({
       firstName: "",
       lastName: "",
+      libraryName: "",
+      libraryAddress: "",
       email: "",
       password: "",
       confirmPassword: "",
     });
-  };
+    setGender("Select gender");
+  }
   // form validation
   const isvalidForm = () => {
     // We will accept only if all the fields have value
     if (!isValidFieldObject(userInfo)) {
-      return updateError("Required all fields", setError);
+      return updateError("Empty field", setError);
     }
     // if valid firstname with 3 or more characters
     if (!firstName.trim() || firstName.length < 3) {
@@ -62,6 +82,14 @@ export default function RegisterScreen({ navigation }) {
     // if valid lastname with 3 or more characters
     if (!lastName.trim() || lastName.length < 3) {
       return updateError("invalid Last Name", setError);
+    }
+    // if valid libraryName with 3 or more characters
+    if (!libraryName.trim() || libraryName.length < 3) {
+      return updateError("invalid Library Name", setError);
+    }
+    // if valid libraryAddress with 3 or more characters
+    if (!libraryAddress.trim() || libraryAddress.length < 3) {
+      return updateError("invalid Library Address", setError);
     }
     // only valid email id is allowed
     if (!isvalidEmail(email)) {
@@ -80,21 +108,25 @@ export default function RegisterScreen({ navigation }) {
   const submitForm = async () => {
     if (isvalidForm()) {
       setLoginPending(true);
-      const res = await signUp({...userInfo});
+      const res = await signUp({ ...userInfo, gender });
       const { success, message } = res.data;
       if (success) {
         alert(message);
         // empty fields
-        resetForm()
+        resetForm();
         setLoginPending(false);
         navigation.navigate("Login");
       } else {
         alert(message);
         // empty fields
-        resetForm()
+        resetForm();
         setLoginPending(false);
       }
     }
+  };
+
+  const fetchItem = (item) => {
+    setGender(item);
   };
 
   return (
@@ -109,7 +141,7 @@ export default function RegisterScreen({ navigation }) {
         <View style={{ height: 80 }}>
           <FormHeader
             leftHeading="Welcome"
-            rightHeading=""
+            rightHeading="in"
             subHeading="Library Management System"
           />
         </View>
@@ -143,6 +175,7 @@ export default function RegisterScreen({ navigation }) {
               <Text fontSize="$md" mb={"$2"}>
                 Create New Account
               </Text>
+              {/* first name */}
               <FormInput
                 inputLabel={"First Name"}
                 type={"text"}
@@ -152,6 +185,7 @@ export default function RegisterScreen({ navigation }) {
                 value={firstName}
                 onChangeText={(value) => handleOnChangeText(value, "firstName")}
               />
+              {/* last name */}
               <FormInput
                 inputLabel={"Last Name"}
                 type={"text"}
@@ -161,6 +195,37 @@ export default function RegisterScreen({ navigation }) {
                 value={lastName}
                 onChangeText={(value) => handleOnChangeText(value, "lastName")}
               />
+              {/* gender */}
+              <CustomDropdownComponent
+                inputLabel="Gender"
+                dropdownList={genders}
+                value={gender}
+                fetchItem={fetchItem}
+                error={gender == "Select gender" ? error : null}
+              />
+              {/* library name */}
+              <FormInput
+                inputLabel={"Library Name"}
+                type={"text"}
+                placeholder={"Enter Library Name"}
+                value={libraryName}
+                error={!libraryName.trim() || libraryName.length < 3 ? error : null}
+                onChangeText={(value) =>
+                  handleOnChangeText(value, "libraryName")
+                }
+              />
+              {/* library Address */}
+              <FormInput
+                inputLabel={"Library Address"}
+                type={"text"}
+                placeholder={"Enter Library Address"}
+                value={libraryAddress}
+                error={!libraryAddress.trim() || libraryAddress.length < 3 ? error : null}
+                onChangeText={(value) =>
+                  handleOnChangeText(value, "libraryAddress")
+                }
+              />
+              {/* Email */}
               <FormInput
                 inputLabel={"Email"}
                 type={"text"}
@@ -171,6 +236,7 @@ export default function RegisterScreen({ navigation }) {
                 value={email}
                 onChangeText={(value) => handleOnChangeText(value, "email")}
               />
+              {/* Password */}
               <FormInput
                 inputLabel={"Password"}
                 type={"password"}
@@ -181,6 +247,7 @@ export default function RegisterScreen({ navigation }) {
                 value={password}
                 onChangeText={(value) => handleOnChangeText(value, "password")}
               />
+              {/* Confirm Password */}
               <FormInput
                 inputLabel={"Confirm Password"}
                 type={"password"}

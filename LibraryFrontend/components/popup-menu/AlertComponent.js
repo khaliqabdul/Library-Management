@@ -17,7 +17,6 @@ import {
   Icon,
   CloseIcon,
 } from "@gluestack-ui/themed";
-import { useLogin } from "../context/LoginProvider";
 
 // AlertComponent is used in UserCard,
 export default function AlertComponent({
@@ -29,7 +28,6 @@ export default function AlertComponent({
   setShowAlert,
   data,
 }) {
-  // const { showAlert, setShowAlert } = useLogin();
 
   return (
     <Center h={0}>

@@ -14,10 +14,11 @@ import { signOut } from "../components/api/user";
 import socketServices from "../components/utils/socketService";
 
 function CustomDrawerContent({ navigation, progress, ...rest }) {
-
-  const { setIsLoggedIn, profile, setProfile, setLoginPending, setIsToken } = useLogin();
+  const { setIsLoggedIn, profile, setProfile, setLoginPending, setIsToken } =
+    useLogin();
   const [menuIndex, setMenuIndex] = useState(-1);
-  const [updatedProfile, setUpdatedProfile] = useState({})
+  const [updatedProfile, setUpdatedProfile] = useState({});
+  const { id } = profile;
   
   const { firstName, lastName, email, avatar } = updatedProfile;
   // console.log("avatar",avatar)
@@ -25,21 +26,27 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
     navigation.navigate(subMenu.label);
   };
 
-  const picture = "https://images.unsplash.com/photo-1682695794947-17061dc284dd?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-  
-  useEffect(() => {
-    socketServices.iniliazeSocket();
-  }, [])
-  
-  useEffect(() => {
-    socketServices.on("send_profile", (data) => {
-      setUpdatedProfile(data)
-    })
-  }, [updatedProfile])
+  const picture =
+    "https://images.unsplash.com/photo-1682695794947-17061dc284dd?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
   useEffect(() => {
-    setUpdatedProfile(profile)
-  }, [profile])
+    socketServices.iniliazeSocket();
+  }, []);
+
+  useEffect(() => {
+    socketServices.emit("join room", id);
+    socketServices.on("send_profile", (data) => {
+      setUpdatedProfile(data);
+    });
+
+    return () => {
+      socketServices.removeListener("send_profile")
+    }
+  }, [updatedProfile]);
+
+  useEffect(() => {
+    setUpdatedProfile(profile);
+  }, [profile]);
 
   return (
     <>
@@ -62,10 +69,10 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
             <Text style={{ fontSize: 10 }}>{email}</Text>
           </View>
           <Image
-            source={{uri: avatar || picture}}
+            source={{ uri: avatar || picture }}
             style={{ width: 50, height: 50, borderRadius: 50 }}
           />
-        </View> 
+        </View>
         {/* Drawer menu with subMenu Section */}
         {drawerMenu.map((menu, index) => {
           return (
@@ -137,7 +144,7 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
           if (isLoggedOut) {
             setIsLoggedIn(false);
             setProfile({});
-            setIsToken("")
+            setIsToken("");
           }
           setLoginPending(false);
         }}

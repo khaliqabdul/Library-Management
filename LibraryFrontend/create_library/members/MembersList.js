@@ -1,19 +1,17 @@
-import { Text, FlatList, StyleSheet, TextInput } from "react-native";
-import { Spinner, VStack, useMedia, View } from "@gluestack-ui/themed";
-import { useEffect, useRef, useState } from "react";
+import { Text, FlatList, StyleSheet, View } from "react-native";
+import { Spinner, VStack, useMedia } from "@gluestack-ui/themed";
+import { useEffect, useState, useCallback } from "react";
 import client from "../../components/api/client";
 import { useLogin } from "../../components/context/LoginProvider";
 import socketServices from "../../components/utils/socketService";
 import UserCard from "../../components/card/UserCard";
-import FormInput from "../../components/formElements/FormInput";
-import Icon from "../../components/Icons";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import SearchComponent from "../../components/searchComponent/SearchComponent";
+import ListEmptyComponent from "../../components/listEmptyComponent/ListEmptyComponent";
 
-const MembersList = () => {
+const MembersList = ({ navigation }) => {
   const [memberData, setMemberData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
-  const searchRef = useRef();
   const { profile, isLoggedin, isToken } = useLogin();
 
   const registration_id = profile.id;
@@ -32,18 +30,34 @@ const MembersList = () => {
     }
   };
 
+  const listEmptyComponent = useCallback(() => {
+    return (
+      <ListEmptyComponent
+        navigation={navigation}
+        text="Tap below button to add reader!"
+        screen="Add Member Screen"
+        buttonTitle="Add Reader"
+      />
+    );
+  }, [memberData]);
+
   useEffect(() => {
     socketServices.iniliazeSocket();
   }, []);
 
   useEffect(() => {
+    socketServices.emit("join room", registration_id);
     // listen from readerController
     socketServices.on("send_member", (data) => {
-      setMemberData(data);
+      setMemberData(data);  
     });
     socketServices.on("delete_member", (data) => {
       setMemberData(data);
     });
+    return () => {
+      socketServices.removeListener("send_member");
+      socketServices.removeListener("delete_member");
+    };
   }, [memberData]);
 
   async function fetchData() {
@@ -52,17 +66,16 @@ const MembersList = () => {
         .post("/getAllReaders", data.libr, {
           headers: {
             "Content-Type": "application/json",
-            // "Content-Type": "multipart/form-data",
             authorization: `${isToken}`,
           },
         })
         .then((res) => {
-          alert(res.data.message)
+          // alert(res.data.message);
           setMemberData(res.data.memberData);
         })
         .catch((err) => {
           console.log("Error", err.message);
-          alert(err.message)
+          alert(err.message);
           setError(true);
         })
         .finally(() => {
@@ -89,23 +102,13 @@ const MembersList = () => {
             numColumns={media.lg ? 3 : 1}
             ListHeaderComponent={
               <>
-                {/* header */}
-                <Text style={styles.headerText}>Member's List</Text>
-                {/* search box */}
-                <View style={styles.inputContainer}>
-                  <View style={styles.iconContainer}>
-                    <Icon icon={faSearch} />
-                  </View>
-                  <FormInput
-                    placeholder="Search"
-                    marginHorizontal={20}
-                    reference={searchRef}
-                    onChangeText={(text) => searchTextHandler(text)}
-                  />
-                </View>
-                {/* <CustomMenu/> */}
+                <SearchComponent
+                  headerText="Member's List"
+                  searchTextHandler={searchTextHandler}
+                />
               </>
             }
+            ListEmptyComponent={listEmptyComponent}
             showsVerticalScrollIndicator={false}
             // contentContainerStyle={{paddingBottom: 150}}
             keyExtractor={(item) => item._id.toString()}
@@ -128,30 +131,11 @@ const MembersList = () => {
   );
 };
 const styles = StyleSheet.create({
-  headerText: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 10,
-    marginLeft: 20,
-    letterSpacing: 1,
-  },
   errorMsg: {
     color: "#ee8888",
     fontSize: 20,
     padding: 24,
     textAlign: "center",
-  },
-  inputContainer: {
-    marginTop: 5,
-  },
-  iconContainer: {
-    position: "absolute",
-    top: 35,
-    right: 30,
-    width: 30,
-    height: 30,
-    borderRadius: 50,
-    // backgroundColor: 'green'
   },
 });
 

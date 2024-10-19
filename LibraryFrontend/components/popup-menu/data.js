@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Colors from "../Colors";
 
-export const baseURL = "http://192.168.1.6:3001"
+export const baseURL = "http://192.168.1.7:3001"
 
 export const data = [
   {

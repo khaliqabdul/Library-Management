@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   FormControl,
   View,
@@ -29,12 +29,12 @@ const genreList = bookGenre.map((item, index) => {
 const AddBook = ({ navigation }) => {
   const {
     isLoggedin,
+    isToken,
     profile,
-    dropdownSelectedItem,
-    setDropdownSelectedItem,
     image,
     setImage,
   } = useLogin();
+  const [genre, setGenre] = useState("Select book genre")
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [inputInfo, setInputInfo] = useState({
@@ -43,17 +43,20 @@ const AddBook = ({ navigation }) => {
     price: "",
   });
   const { bookTitle, author, price } = inputInfo;
+  
+  const inputRef = useRef();
 
   useEffect(() => {
     socketServices.iniliazeSocket();
-  }, []);
+    inputRef.current.focus();
+  }, [inputRef]);
 
   const onChangeTextHandler = (value, fieldName) => {
     setInputInfo({ ...inputInfo, [fieldName]: value });
   };
 
   const registration_id = profile.id;
-  const genre = dropdownSelectedItem;
+  
   // Reset From
   function resetForm() {
     setInputInfo({
@@ -61,7 +64,7 @@ const AddBook = ({ navigation }) => {
       author: "",
       price: "",
     });
-    setDropdownSelectedItem("Select");
+    setGenre("Select book genre")
     setImage(null);
   }
 
@@ -104,15 +107,14 @@ const AddBook = ({ navigation }) => {
       if (isLoggedin) {
         await client
           .post(`/addBook`, formData, {
-            // headers: {
-            //   Accept: "application/json",
-            //   "Content-Type": 'multipart/form-data',
-            //   "Access-Control-Allow-Origin": "*",
-            // },
+            headers: {
+              "Content-Type": "application/json",
+              authorization: `${isToken}`,
+            },
           })
           .then((res) => {
             // listen in bookController
-            socketServices.emit("add_book", formData);
+            socketServices.emit("add_book", registration_id);
             resetForm();
             alert(res.data.message);
             // console.log(res.data)
@@ -123,13 +125,19 @@ const AddBook = ({ navigation }) => {
           })
           .finally(() => {
             setIsLoading(false);
-            navigation.navigate("BooksList")
+            navigation.navigate("BooksList");
           });
       }
     }
   };
 
+  // fetch book genre
+  const fetchItem = (item) => {
+    setGenre(item)
+  }
+
   const media = useMedia();
+
   return (
     <View
       style={styles.container}
@@ -151,6 +159,7 @@ const AddBook = ({ navigation }) => {
           <FormInput
             inputLabel="Book Title"
             placeholder="Enter Book Name"
+            inputRef={inputRef}
             type="text"
             value={bookTitle}
             onChangeText={(value) => onChangeTextHandler(value, "bookTitle")}
@@ -170,7 +179,8 @@ const AddBook = ({ navigation }) => {
             dropdownList={genreList}
             inputLabel="Genre"
             value={genre}
-            error={genre == "Select" ? error : null}
+            fetchItem={fetchItem}
+            error={genre == "Select book genre" ? error : null}
           />
           {/* Price */}
           <FormInput

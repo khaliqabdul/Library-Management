@@ -66,6 +66,7 @@ export default function LoginScreen({ navigation }) {
       // console.log(res.data)
       if (!res.data.success) {
         alert(res.data.message);
+        alert(res.data.type);
         setLoginPending(false);
         setInputInfo({ email: "", password: "" });
       } else {
@@ -75,6 +76,7 @@ export default function LoginScreen({ navigation }) {
         setInputInfo({ email: "", password: "" });
         setIsLoggedIn(true);
         setLoginPending(false);
+        // alert(res.data.message);
       }
     }
   };
