@@ -1,11 +1,22 @@
 import React from "react";
 import { StyleSheet, View, Text, TouchableWithoutFeedback } from "react-native";
+import { useFonts } from "expo-font";
+import fontFamily from "../styles/fontFamily";
+import Colors from "../Colors";
+import { textScale, moderateScaleVertical } from "../styles/responsiveSize";
 
-const FormSelectorButton = ({title, backgroundColor, style, onPress}) => {
+const FormSelectorButton = ({ title, backgroundColor, style, onPress }) => {
+   // fonts
+   const [loaded] = useFonts({
+    arima_bold: fontFamily.arima_Bold,
+  });
+  if (!loaded) {
+    return <Text>Loading fonts...</Text>;
+  }
   return (
     <>
       <TouchableWithoutFeedback onPress={onPress}>
-        <View style={[styles.container, style, {backgroundColor}]}>
+        <View style={[styles.container, style, { backgroundColor }]}>
           <Text style={styles.title}>{title}</Text>
         </View>
       </TouchableWithoutFeedback>
@@ -16,15 +27,14 @@ export default FormSelectorButton;
 
 const styles = StyleSheet.create({
   container: {
-    height: 45,
+    height: moderateScaleVertical(45),
     width: "50%",
-    backgroundColor: "#1b1b33",
     justifyContent: "center",
     alignItems: "center",
   },
   title: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "white",
-  }
+    fontSize: textScale(18),
+    fontFamily: "arima_bold",
+    color: Colors.white,
+  },
 });

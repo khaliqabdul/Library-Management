@@ -14,16 +14,15 @@ import { useLogin } from "../context/LoginProvider";
 import ProgressScreen from "../formElements/ProgressScreen";
 import bgCover from "../../assets/images/splash.jpeg";
 import ProfileText from "./ProfileText";
-import RoundImage from "./RoundImage";
 
 export default function ProfileScreen({ navigation }) {
   const [profileImage, setProfileImage] = useState();
   const [progress, setProgress] = useState(0);
   const { isToken, setProfile, profile } = useLogin();
-  const { firstName, lastName, libraryName, avatar } = profile;
+  const { firstName, lastName, libraryName, libraryAddress, avatar } = profile;
   const userName = `${firstName} ${lastName}`;
   const image = require("../../assets/images/userAvatar.png");
-
+  
   const openImageLibrary = async () => {
     const response = await ImagePicker.requestMediaLibraryPermissionsAsync();
     const { status } = response;
@@ -88,9 +87,6 @@ export default function ProfileScreen({ navigation }) {
         <View style={styles.editProfile}>
           <Text style={styles.editProfileButton}>Edit Profile</Text>
         </View>
-
-        {/* <RoundImage/> */}
-
         {/* prfile image section */}
         <View style={styles.topSection}>
           {progress ? <ProgressScreen process={progress} /> : null}
@@ -109,7 +105,7 @@ export default function ProfileScreen({ navigation }) {
               )}
             </Pressable>
           </View>
-          <Text style={styles.nameText}>{libraryName}</Text>
+          
           {profileImage ? (
             <Text
               onPress={uploadProfileImage}
@@ -120,7 +116,12 @@ export default function ProfileScreen({ navigation }) {
             >
               Upload
             </Text>
-          ) : null}
+          ) : (
+            <>
+            <Text style={styles.nameText}>{libraryName}</Text>
+            <Text style={styles.address}>{libraryAddress}</Text>
+            </>
+          )}
         </View>
         {/* profile text section */}
         <ProfileText />
@@ -139,6 +140,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     // backgroundColor: "green",
+    borderBottomWidth: 1,
+    borderBlockColor: 'white',
+    marginBottom: 20
   },
   picSection: {
     height: 150,
@@ -166,8 +170,13 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 2,
     // opacity: 0.5,
-    color: "white",
+    color: "green",
     marginTop: 10,
+  },
+  address: {
+    textAlign: "center",
+    color: "green",
+    fontSize: 12
   },
   editProfile: {
     width: "100%",

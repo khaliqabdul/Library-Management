@@ -1,14 +1,21 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import client from "./client";
 
+const catchError = (error) => {
+  if (error?.response?.data) {
+    return error.response.data;
+  }
+  return { success: false, error: error.message };
+};
+
 // signUp method
 export async function signUp({ ...userInfo }) {
   try {
     const signUpResponse = await client.post("/signup", { ...userInfo });
-    const { success, message, token } = signUpResponse.data;
+    // const { success, message, token } = signUpResponse.data;
     return signUpResponse;
   } catch (error) {
-    console.log("Error inside signup method", error.message);
+    return catchError(error);
   }
 }
 
@@ -27,7 +34,7 @@ export const signIn = async (email, password) => {
       return signInResponse;
     }
   } catch (error) {
-    console.log("Error inside signin method", error.message);
+    return catchError(error);
   }
 };
 
@@ -50,7 +57,6 @@ export const signOut = async () => {
     }
     return false;
   } catch (error) {
-    console.log("error inside signout method", error.message);
-    return false;
+    return catchError(error);
   }
 };

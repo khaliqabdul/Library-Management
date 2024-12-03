@@ -8,10 +8,19 @@ import {
   InputField,
   HStack,
   Text,
+  Pressable,
 } from "@gluestack-ui/themed";
 import { useState } from "react";
 import { StyleSheet } from "react-native";
-// import { useLogin } from "../context/LoginProvider";
+import { useFonts } from "expo-font";
+import fontFamily from "../styles/fontFamily";
+import Colors from "../Colors";
+import {
+  scale,
+  textScale,
+  moderateScale,
+  moderateScaleVertical,
+} from "../styles/responsiveSize";
 
 export default function FormInput(props) {
   const {
@@ -28,6 +37,7 @@ export default function FormInput(props) {
     marginHorizontal,
     maxLength,
     inputRef,
+    openScreen = () => {},
   } = props;
   const [showPassword, setShowpassword] = useState(false);
 
@@ -36,15 +46,28 @@ export default function FormInput(props) {
       return !showState;
     });
   };
-  
+  // fonts
+  const [loaded] = useFonts({
+    raleway_bold: fontFamily.raleway_Bold,
+    raleway_light: fontFamily.raleway_light,
+    raleway_medium: fontFamily.raleway_medium,
+    raleway_regular: fontFamily.raleway_regular,
+  });
+  if (!loaded) {
+    return <Text>Loading fonts...</Text>;
+  }
+
   return (
     <FormControl>
       <HStack>
-        <Text style={{ fontWeight: "bold" }}>{inputLabel}</Text>
-        <Text lineHeight="$xs" fontSize={"$xs"} color="#005DB4" ml={"auto"}>
-          {rightInputLabel}
-        </Text>
-        {/* <Text style={styles.errorMessage}>{error}</Text> */}
+        <Text style={styles.inputLabel}>{inputLabel}</Text>
+        <Pressable
+          style={{ marginLeft: "auto" }}
+          onPress={openScreen}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.rightInputLabel}>{rightInputLabel}</Text>
+        </Pressable>
       </HStack>
 
       <Input style={[styles.input, { marginHorizontal: marginHorizontal }]}>
@@ -63,12 +86,10 @@ export default function FormInput(props) {
           <InputSlot pr="$4" onPress={handleState}>
             <InputIcon
               as={showPassword ? EyeIcon : EyeOffIcon}
-              color="#005DB4"
+              color={Colors.primary}
             />
           </InputSlot>
-        ) : (
-          null
-        )}
+        ) : null}
       </Input>
       <Text style={styles.errorMessage}>{error}</Text>
     </FormControl>
@@ -77,18 +98,28 @@ export default function FormInput(props) {
 
 const styles = StyleSheet.create({
   input: {
-    borderWidth: 1,
-    borderColor: "#1b1b33",
+    borderWidth: moderateScaleVertical(1),
+    borderColor: Colors.gray, //"#1b1b33"
     borderRadius: 0,
-    height: 35,
-    fontSize: 16,
-    paddingLeft: 5,
+    height: moderateScaleVertical(40),
+    fontSize: textScale(16),
+    paddingLeft: moderateScale(5),
     marginBottom: 0,
+    fontFamily: "raleway_regular",
+  },
+  inputLabel: {
+    fontFamily: "raleway_bold",
+    fontSize: textScale(16),
+  },
+  rightInputLabel: {
+    fontSize: textScale(15),
+    color: Colors.primary,
+    fontFamily: "raleway_medium",
   },
   errorMessage: {
     textAlign: "right",
-    color: "red",
-    fontSize: 13,
-    marginBottom: 10,
+    color: Colors.pink,
+    fontSize: textScale(14),
+    marginBottom: moderateScale(10),
   },
 });

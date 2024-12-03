@@ -9,9 +9,8 @@ import {
   HStack,
   Center,
 } from "@gluestack-ui/themed";
-import { StyleSheet } from "react-native";
-import { useState } from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Keyboard, StyleSheet } from "react-native";
+import { useEffect, useState } from "react";
 import { useLogin } from "../components/context/LoginProvider";
 import FormHeader from "../components/formElements/ٖFormHeader";
 import FormInput from "../components/formElements/FormInput";
@@ -23,17 +22,33 @@ import {
   isValidFieldObject,
   isvalidEmail,
   updateError,
+  updateNotification,
 } from "../components/utils/formValidationMethods";
 import { signIn } from "../components/api/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const Stack = createNativeStackNavigator();
+import { useFonts } from "expo-font";
+import fontFamily from "../components/styles/fontFamily";
+import Colors from "../components/Colors";
+import {
+  moderateScale,
+  moderateScaleVertical,
+  textScale,
+} from "../components/styles/responsiveSize";
+import AppNotification from "../components/AppNotification";
 
 export default function LoginScreen({ navigation }) {
-  const { loginPending, setLoginPending, setIsLoggedIn, setProfile, setIsToken } =
-    useLogin();
-  
+  const {
+    loginPending,
+    setLoginPending,
+    setIsLoggedIn,
+    setProfile,
+    setIsToken,
+  } = useLogin();
   const [error, setError] = useState("");
+  const [message, setMessage] = useState({
+    text: "",
+    type: "",
+  });
   const [inputInfo, setInputInfo] = useState({
     email: "",
     password: "",
@@ -60,27 +75,38 @@ export default function LoginScreen({ navigation }) {
     return true;
   };
   const sendRequestToLogin = async () => {
+    Keyboard.dismiss();
     if (isValidForm()) {
       setLoginPending(true);
       const res = await signIn(email, password);
-      // console.log(res.data)
       if (!res.data.success) {
-        alert(res.data.message);
-        alert(res.data.type);
+        updateNotification(res.data.message, setMessage);
         setLoginPending(false);
         setInputInfo({ email: "", password: "" });
       } else {
-        const token = await AsyncStorage.getItem("token")
-        setIsToken(token)
+        const token = await AsyncStorage.getItem("token");
+        setIsToken(token);
         setProfile(res.data.user);
         setInputInfo({ email: "", password: "" });
         setIsLoggedIn(true);
         setLoginPending(false);
-        // alert(res.data.message);
       }
     }
   };
-  const media = useMedia(); 
+
+  const openScreen = () => {
+    navigation.navigate("ForgetPassword");
+  };
+
+  const media = useMedia();
+  // fonts
+  const [loaded] = useFonts({
+    raleway_medium: fontFamily.raleway_medium,
+    raleway_regular: fontFamily.raleway_regular,
+  });
+  if (!loaded) {
+    return <Text>Loading fonts...</Text>;
+  }
   return (
     <>
       <View
@@ -90,7 +116,7 @@ export default function LoginScreen({ navigation }) {
         marginRight={"auto"}
         marginLeft={"auto"}
       >
-        <View style={{ height: 80 }}>
+        <View style={{ height: 70 }}>
           <FormHeader
             leftHeading="Welcome"
             rightHeading="Back"
@@ -110,7 +136,9 @@ export default function LoginScreen({ navigation }) {
             onPress={() => navigation.navigate("Register")}
           />
         </View>
-        {/* <ProgressScreen/> */}
+        {message.text ? (
+          <AppNotification type={message.type} text={message.text} />
+        ) : null}
         <ScrollView>
           <FormControl
             p="$5"
@@ -123,14 +151,14 @@ export default function LoginScreen({ navigation }) {
           >
             <VStack space="xl">
               <HStack>
-                <Text fontSize="$xs">Don't have account?</Text>
+                <Text fontSize="$xs" fontFamily="raleway_regular">
+                  Don't have account?
+                </Text>
                 <Pressable
                   onPress={() => navigation.navigate("Register")}
                   $hover-bg="$primary400"
                 >
-                  <Text fontSize="$sm" color="#005DB4" ml="$1">
-                    Register Now
-                  </Text>
+                  <Text style={styles.registerNow}>Register Now</Text>
                 </Pressable>
               </HStack>
               {/* input email */}
@@ -149,9 +177,9 @@ export default function LoginScreen({ navigation }) {
                 rightInputLabel={"Forget Password?"}
                 placeholder={"************"}
                 type={"password"}
+                openScreen={openScreen}
                 error={!password.trim() || password.length < 8 ? error : null}
                 autoCapitalize="none"
-                // secureTextEntry
                 value={password}
                 onChangeText={(value) => onChangeTextHandler(value, "password")}
               />
@@ -164,11 +192,17 @@ export default function LoginScreen({ navigation }) {
               />
               <Center>
                 <HStack alignItems="center">
-                  <Text fontSize={"$xs"}>Need help?</Text>
-                  <Text fontSize={"$sm"} color="#005DB4" ml={"$1"}>
-                    Contact Us
+                  <Text fontSize={"$xs"} fontFamily="raleway_regular">
+                    Need help?
                   </Text>
+                  <Text style={styles.linkText}>Contact Us</Text>
                 </HStack>
+                <Pressable onPress={openScreen}>
+                  <Text style={styles.linkText}>Forget Password?</Text>
+                </Pressable>
+                {/* <Pressable onPress={() => navigation.navigate("VerifyEmail")}>
+                  <Text style={styles.linkText}>Verify Email!</Text>
+                </Pressable> */}
               </Center>
             </VStack>
           </FormControl>
@@ -181,14 +215,21 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: moderateScaleVertical(20),
   },
   borderLeft: {
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
+    borderTopLeftRadius: moderateScaleVertical(8),
+    borderBottomLeftRadius: moderateScaleVertical(8),
   },
   borderRight: {
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
+    borderTopRightRadius: moderateScaleVertical(8),
+    borderBottomRightRadius: moderateScaleVertical(8),
+  },
+  linkText: {
+    fontSize: textScale(16),
+    color: Colors.primary,
+    marginLeft: moderateScale(5),
+    fontFamily: "raleway_medium",
+    marginVertical: moderateScaleVertical(5),
   },
 });

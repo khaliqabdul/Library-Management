@@ -7,13 +7,15 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server, {
   cors: {
-    origin: "*"   // can connect all http requests
-  }
+    origin: "*", // can connect all http requests
+  },
 });
 global.io = io;
 
 const connectDB = require("./db/connectdb");
 require("./models/Registration");
+require("./models/verificationOTP");
+require("./models/resetPasswordToken");
 const router = require("./routes/rigistrationRoute");
 const readerRouter = require("./routes/readerRoutes");
 const bookRouter = require("./routes/bookRoutes");
@@ -43,12 +45,14 @@ app.use("/", router);
 app.use("/", readerRouter);
 app.use("/", bookRouter);
 
-const corsOrigin = {
-  origin: "http://localhost:19006", //or whatever port your frontend is using
+const mobileUrl = "http://localhost:19006";
+
+const corsOrigin1 = {
+  origin: `${mobileUrl}`, //or whatever port your frontend is using
   credentials: true,
   optionSuccessStatus: 200,
 };
-app.use(cors(corsOrigin));
+app.use(cors());
 
 // socket
 // io.on("connection", (socket) => {

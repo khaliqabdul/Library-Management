@@ -1,5 +1,6 @@
 {
   "expo": {
+    "scheme": "libraryfrontend",
     "name": "libraryfrontend",
     "slug": "libraryfrontend",
     "version": "1.0.0",

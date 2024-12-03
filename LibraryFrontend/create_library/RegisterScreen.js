@@ -5,7 +5,8 @@ import {
   View,
   useMedia,
 } from "@gluestack-ui/themed";
-import { StyleSheet } from "react-native";
+import { Keyboard, StyleSheet } from "react-native";
+import { StackActions } from "@react-navigation/native";
 import { useState } from "react";
 
 import FormInput from "../components/formElements/FormInput";
@@ -16,12 +17,21 @@ import {
   isValidFieldObject,
   isvalidEmail,
   updateError,
+  updateNotification,
 } from "../components/utils/formValidationMethods";
 import LoadingScreen from "../components/formElements/LoadingScreen";
 import { useLogin } from "../components/context/LoginProvider";
 import { signUp } from "../components/api/user";
 import CustomDropdownComponent from "../components/formElements/CustomDropdownComponent";
 import { genderData } from "../components/popup-menu/data";
+import { useFonts } from "expo-font";
+import fontFamily from "../components/styles/fontFamily";
+import Colors from "../components/Colors";
+import {
+  moderateScaleVertical,
+  textScale,
+} from "../components/styles/responsiveSize";
+import AppNotification from "../components/AppNotification";
 
 const genders = genderData.map((item, index) => {
   return `${item.gender}`;
@@ -40,6 +50,10 @@ export default function RegisterScreen({ navigation }) {
     confirmPassword: "",
   });
   const [error, setError] = useState("");
+  const [message, setMessage] = useState({
+    text: "",
+    type: "",
+  });
   const {
     firstName,
     lastName,
@@ -72,7 +86,7 @@ export default function RegisterScreen({ navigation }) {
   // form validation
   const isvalidForm = () => {
     // We will accept only if all the fields have value
-    if (!isValidFieldObject(userInfo)) {
+    if (!isValidFieldObject({ ...userInfo })) {
       return updateError("Empty field", setError);
     }
     // if valid firstname with 3 or more characters
@@ -100,34 +114,51 @@ export default function RegisterScreen({ navigation }) {
       return updateError("password is less than 8 characters", setError);
     }
     // password and confirm password must be same
-    if (password !== confirmPassword) {
-      return updateError("password does not match", setError);
+    if (!confirmPassword.trim() || confirmPassword.length < 8) {
+      return updateError("password is less than 8 characters", setError);
     }
     return true;
   };
   const submitForm = async () => {
-    if (isvalidForm()) {
-      setLoginPending(true);
-      const res = await signUp({ ...userInfo, gender });
-      const { success, message } = res.data;
-      if (success) {
-        alert(message);
-        // empty fields
-        resetForm();
-        setLoginPending(false);
-        navigation.navigate("Login");
-      } else {
-        alert(message);
-        // empty fields
-        resetForm();
-        setLoginPending(false);
+    Keyboard.dismiss();
+    try {
+      if (isvalidForm()) {
+        setLoginPending(true);
+        const res = await signUp({ ...userInfo, gender });
+        const { success, message, user } = res.data;
+
+        if (success) {
+          updateNotification(message, setMessage, "success");
+          resetForm();
+          setLoginPending(false);
+          navigation.dispatch(
+            StackActions.replace("VerifyEmail", { Profile: user })
+          );
+          // navigation.navigate("VerifyEmail", user);
+        } else {
+          updateNotification(res.error, setMessage);
+          updateNotification(message, setMessage);
+          resetForm();
+          setLoginPending(false);
+        }
       }
+    } catch (error) {
+      if (error?.response?.data)
+        return updateNotification(error.response.data, setMessage);
     }
   };
 
   const fetchItem = (item) => {
     setGender(item);
   };
+  // fonts
+  const [loaded] = useFonts({
+    raleway_bold: fontFamily.raleway_Bold,
+    raleway_medium: fontFamily.raleway_medium,
+  });
+  if (!loaded) {
+    return <Text>Loading fonts...</Text>;
+  }
 
   return (
     <>
@@ -138,14 +169,14 @@ export default function RegisterScreen({ navigation }) {
         marginRight={"auto"}
         marginLeft={"auto"}
       >
-        <View style={{ height: 80 }}>
+        <View style={{ height: 70 }}>
           <FormHeader
             leftHeading="Welcome"
             rightHeading="in"
             subHeading="Library Management System"
           />
         </View>
-        <View style={{ flexDirection: "row", padding: 20, marginBottom: 10 }}>
+        <View style={{ flexDirection: "row", padding: 20 }}>
           <FormSelectorButton
             style={styles.borderLeft}
             backgroundColor="rgba(27, 27, 51, 0.4)"
@@ -158,9 +189,11 @@ export default function RegisterScreen({ navigation }) {
             title="Sign up"
           />
         </View>
-        {/* { success.false ? (
-          <Text style={styles.errorMessage}>{message}</Text>
-        ) : null} */}
+        <Text style={styles.createAccount}>Create New Account</Text>
+        {/* Notification message */}
+        {message.text ? (
+          <AppNotification type={message.type} text={message.text} />
+        ) : null}
         <ScrollView>
           <View>
             <FormControl
@@ -172,9 +205,6 @@ export default function RegisterScreen({ navigation }) {
               $dark-borderRadius="$lg"
               $dark-borderColor="$borderDark800"
             >
-              <Text fontSize="$md" mb={"$2"}>
-                Create New Account
-              </Text>
               {/* first name */}
               <FormInput
                 inputLabel={"First Name"}
@@ -209,7 +239,9 @@ export default function RegisterScreen({ navigation }) {
                 type={"text"}
                 placeholder={"Enter Library Name"}
                 value={libraryName}
-                error={!libraryName.trim() || libraryName.length < 3 ? error : null}
+                error={
+                  !libraryName.trim() || libraryName.length < 3 ? error : null
+                }
                 onChangeText={(value) =>
                   handleOnChangeText(value, "libraryName")
                 }
@@ -220,7 +252,11 @@ export default function RegisterScreen({ navigation }) {
                 type={"text"}
                 placeholder={"Enter Library Address"}
                 value={libraryAddress}
-                error={!libraryAddress.trim() || libraryAddress.length < 3 ? error : null}
+                error={
+                  !libraryAddress.trim() || libraryAddress.length < 3
+                    ? error
+                    : null
+                }
                 onChangeText={(value) =>
                   handleOnChangeText(value, "libraryAddress")
                 }
@@ -253,7 +289,11 @@ export default function RegisterScreen({ navigation }) {
                 type={"password"}
                 placeholder={"Confirm Password"}
                 autoCapitalize="none"
-                error={password !== confirmPassword ? error : null}
+                error={
+                  !confirmPassword.trim() || confirmPassword.length < 8
+                    ? error
+                    : null
+                }
                 focus={null}
                 value={confirmPassword}
                 onChangeText={(value) =>
@@ -277,20 +317,27 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: moderateScaleVertical(20),
   },
   borderLeft: {
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
+    borderTopLeftRadius: moderateScaleVertical(8),
+    borderBottomLeftRadius: moderateScaleVertical(8),
   },
   borderRight: {
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
+    borderTopRightRadius: moderateScaleVertical(8),
+    borderBottomRightRadius: moderateScaleVertical(8),
+  },
+  createAccount: {
+    color: Colors.Charcoal,
+    fontSize: textScale(18),
+    fontFamily: "raleway_medium",
+    alignSelf: "center",
+    marginBottom: moderateScaleVertical(5),
   },
   errorMessage: {
     textAlign: "center",
-    color: "red",
-    fontSize: 13,
-    marginBottom: 10,
+    color: Colors.pink,
+    fontSize: textScale(14),
+    marginBottom: moderateScaleVertical(10),
   },
 });

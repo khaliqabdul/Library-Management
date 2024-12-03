@@ -6,11 +6,11 @@ export const isvalidEmail = (value) => {
 };
 // mobile No validation
 export const isvalidMobileNo = (value) => {
-  if(value.length == 10) {
+  if (value.length == 10) {
     const pattern = new RegExp(/^\d{1,10}$/);
     return pattern.test(value);
   }
-  return false
+  return false;
 };
 // cnic validation
 export const isvalidCNIC = (value) => {
@@ -26,7 +26,14 @@ export function updateError(error, setError) {
   }, 2500);
 }
 
+export function updateNotification(text, setMessage, type = "error") {
+  setMessage({ text, type });
+  setTimeout(() => {
+    setMessage({ text: "", type: "" });
+  }, 5000);
+}
+
 export const isValidFieldObject = (obj) => {
-  // console.log(obj)
+  // console.log(obj);
   return Object.values(obj).every((value) => value.trim());
 };

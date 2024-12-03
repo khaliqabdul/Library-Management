@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "./LoginScreen";
 import RegisterScreen from "./RegisterScreen";
 import Dashboard from "./Dashboard";
+
 import { useLogin } from "../components/context/LoginProvider";
 import LoadingScreen from "../components/formElements/LoadingScreen";
 
@@ -16,12 +17,18 @@ export default function LibraryHome() {
   return isLoggedin ? (
     <>
       {loginPending ? <LoadingScreen /> : null}
-      <Stack.Navigator screenOptions={{headerShown: false}}>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Dashboard" component={Dashboard} />
       </Stack.Navigator>
     </>
   ) : (
-    <Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={{
+        tabBarScrollEnabled: true,
+        tabBarItemStyle: { width: "0%" },
+        tabBarIndicatorStyle: { left: "100%" },
+      }}
+    >
       <Tab.Screen name="Login" component={LoginScreen} />
       <Tab.Screen name="Register" component={RegisterScreen} />
     </Tab.Navigator>
