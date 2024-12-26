@@ -16,6 +16,7 @@ const connectDB = require("./db/connectdb");
 require("./models/Registration");
 require("./models/verificationOTP");
 require("./models/resetPasswordToken");
+require("./models/contactUsModal");
 const router = require("./routes/rigistrationRoute");
 const readerRouter = require("./routes/readerRoutes");
 const bookRouter = require("./routes/bookRoutes");

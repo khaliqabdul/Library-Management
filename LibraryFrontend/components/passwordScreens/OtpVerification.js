@@ -73,8 +73,10 @@ const OtpVerification = ({ route, navigation }) => {
           }
         )
         .then((res) => {
-          updateNotification(res.data.message, setMessage);
-          navigation.dispatch(StackActions.replace("LMS Home"));
+          updateNotification(res.data.message, setMessage, "success");
+          setTimeout(() => {
+            navigation.dispatch(StackActions.replace("LMS Home"));
+          }, 5000);
         })
         .catch((error) => {
           if (error?.response?.data) {
@@ -132,7 +134,12 @@ const OtpVerification = ({ route, navigation }) => {
       </View>
       {loading ? <LoadingScreen /> : null}
       <View style={styles.buttonContainer}>
-        <FormSubmitButton onPress={() => submitOTP()} title={"Submit OTP"} />
+        <FormSubmitButton
+          onPress={() => submitOTP()}
+          title={"Submit OTP"}
+          customColor={true}
+          disabled={false}
+        />
       </View>
     </KeyboardAvoidingView>
   );

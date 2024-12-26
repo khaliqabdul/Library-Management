@@ -21,6 +21,7 @@ const ListEmptyComponent = ({
         <View style={styles.button}>
           <FormSubmitButton
             title={buttonTitle}
+            customColor={true}
             onPress={() => navigation.navigate(screen)}
           />
         </View>

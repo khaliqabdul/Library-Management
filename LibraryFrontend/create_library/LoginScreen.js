@@ -10,7 +10,7 @@ import {
   Center,
 } from "@gluestack-ui/themed";
 import { Keyboard, StyleSheet } from "react-native";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLogin } from "../components/context/LoginProvider";
 import FormHeader from "../components/formElements/ٖFormHeader";
 import FormInput from "../components/formElements/FormInput";
@@ -189,14 +189,17 @@ export default function LoginScreen({ navigation }) {
               <FormSubmitButton
                 title={"Login"}
                 onPress={() => sendRequestToLogin()}
+                customColor={true}
               />
               <Center>
-                <HStack alignItems="center">
+                {/* <HStack alignItems="center">
                   <Text fontSize={"$xs"} fontFamily="raleway_regular">
                     Need help?
                   </Text>
-                  <Text style={styles.linkText}>Contact Us</Text>
-                </HStack>
+                  <Pressable onPress={() => navigation.navigate("contact")}>
+                    <Text style={styles.linkText}>Contact Us</Text>
+                  </Pressable>
+                </HStack> */}
                 <Pressable onPress={openScreen}>
                   <Text style={styles.linkText}>Forget Password?</Text>
                 </Pressable>

@@ -53,7 +53,7 @@ router.get("/verify-resetPassToken", isResetpasswordTokenValid, (req, res) => {
 router.get("/verify-OTPToken", isEmailVerificationTokenValid, (req, res) => {
   res.json({ success: true, message: "OTP verified successfully" });
 });
-router.get("/isUserVerified", registrationController.isUserVerified);
+router.post("/contact-us", registrationController.contactUs);
 
 router.post("/signin", registrationController.signIn);
 router.post("/signout", authToken, registrationController.signOut);
@@ -63,6 +63,7 @@ router.post(
   uploads.single("profile"),
   registrationController.uploadProfileImage
 );
+router.post("/update-profile", authToken, registrationController.updateProfile);
 router.get("/profile", authToken, registrationController.sendProfileToClient);
 
 module.exports = router;

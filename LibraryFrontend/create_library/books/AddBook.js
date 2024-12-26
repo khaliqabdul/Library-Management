@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   FormControl,
   View,
@@ -21,20 +21,21 @@ import {
 import client from "../../components/api/client";
 import ImagePickerComponent from "../../components/ImagePicker/ImagePickerComponent";
 import socketServices from "../../components/utils/socketService";
+import {
+  moderateScale,
+  textScale,
+  moderateScaleVertical,
+  scale,
+} from "../../components/styles/responsiveSize";
+import Colors from "../../components/Colors";
 
 const genreList = bookGenre.map((item, index) => {
   return `${item.genre}`;
 });
 
 const AddBook = ({ navigation }) => {
-  const {
-    isLoggedin,
-    isToken,
-    profile,
-    image,
-    setImage,
-  } = useLogin();
-  const [genre, setGenre] = useState("Select book genre")
+  const { isLoggedin, isToken, profile, image, setImage } = useLogin();
+  const [genre, setGenre] = useState("Select book genre");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [inputInfo, setInputInfo] = useState({
@@ -43,20 +44,17 @@ const AddBook = ({ navigation }) => {
     price: "",
   });
   const { bookTitle, author, price } = inputInfo;
-  
-  const inputRef = useRef();
 
   useEffect(() => {
     socketServices.iniliazeSocket();
-    inputRef.current.focus();
-  }, [inputRef]);
+  }, []);
 
   const onChangeTextHandler = (value, fieldName) => {
     setInputInfo({ ...inputInfo, [fieldName]: value });
   };
 
   const registration_id = profile.id;
-  
+
   // Reset From
   function resetForm() {
     setInputInfo({
@@ -64,7 +62,7 @@ const AddBook = ({ navigation }) => {
       author: "",
       price: "",
     });
-    setGenre("Select book genre")
+    setGenre("Select book genre");
     setImage(null);
   }
 
@@ -133,8 +131,8 @@ const AddBook = ({ navigation }) => {
 
   // fetch book genre
   const fetchItem = (item) => {
-    setGenre(item)
-  }
+    setGenre(item);
+  };
 
   const media = useMedia();
 
@@ -150,7 +148,7 @@ const AddBook = ({ navigation }) => {
         <FormHeader
           leftHeading="Add"
           rightHeading="Book"
-          style={{ color: "#FAF9F6", paddingTop: 5, fontWeight: "300" }}
+          style={styles.formHeaderText}
         />
       </View>
       <ScrollView>
@@ -159,7 +157,6 @@ const AddBook = ({ navigation }) => {
           <FormInput
             inputLabel="Book Title"
             placeholder="Enter Book Name"
-            inputRef={inputRef}
             type="text"
             value={bookTitle}
             onChangeText={(value) => onChangeTextHandler(value, "bookTitle")}
@@ -197,12 +194,14 @@ const AddBook = ({ navigation }) => {
           {/* Submit Button */}
           {isLoading ? (
             <VStack mt="$5">
-              <Spinner size="large" color="red" />
+              <Spinner size="large" color={Colors.red} />
             </VStack>
           ) : (
             <VStack mt="$5">
               <FormSubmitButton
                 title={"Save Book"}
+                disabled={false}
+                customColor={true}
                 onPress={() => sendRequestToAddNewBook()}
               />
             </VStack>
@@ -218,12 +217,17 @@ export default AddBook;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 5,
+    paddingTop: moderateScaleVertical(5),
   },
   formHeaderContainer: {
-    height: 60,
-    margin: 10,
-    backgroundColor: "#1b1b33",
-    borderRadius: 10,
+    height: moderateScaleVertical(60),
+    margin: scale(10),
+    backgroundColor: Colors.black,
+    borderRadius: scale(10),
+  },
+  formHeaderText: {
+    color: Colors.green,
+    paddingTop: moderateScale(5),
+    // fontWeight: "300",
   },
 });

@@ -9,6 +9,7 @@ const {
   mailTransport,
   generateEmailTemplate,
   passwordResetTemplate,
+  contactUsTemplate,
 } = require("../utils/mail");
 const { sendError, createRandomBytes } = require("../utils/helper");
 const { isValidObjectId } = require("mongoose");
@@ -17,6 +18,8 @@ require("dotenv").config();
 const User = mongoose.model("Registration");
 const VerificationOTP = mongoose.model("VerificationOTP");
 const ResetPasswordToken = mongoose.model("ResetPasswordToken");
+const ContactUs = require("../models/contactUsModal");
+// const userAvatar = require("../images/userAvatar");
 
 global.io.on("connection", (socket) => {
   // console.log("socket connected in registration controllers!");
@@ -65,18 +68,14 @@ const signup = async (req, res) => {
       password,
       confirmPassword,
     });
-    // generate OTP
+    // generate OTP and save in db
     const OTP = generateOTP();
-    const verificationOTP = new VerificationOTP({
-      owner: user._id,
-      token: OTP,
-    });
+    await VerificationOTP.create({ owner: user._id, token: OTP });
 
     const token = jwt.sign({ userId: user._id }, jwtKey, {
       expiresIn: "1d",
     });
-    // save user & otp
-    await verificationOTP.save();
+    // save user
     await user.save({ tokens: token });
 
     const userInfo = {
@@ -175,9 +174,11 @@ const signIn = async (req, res) => {
       });
     }
     if (!user.isVerified) {
+      await User.findByIdAndDelete(user._id);
       return res.json({
         success: false,
-        message: "Email not verified, Please verify your email first!",
+        message:
+          "Email not verified, Please register again and verify your email to proceed!",
       });
     }
     const token = jwt.sign({ userId: user._id }, jwtKey, {
@@ -382,21 +383,92 @@ const sendProfileToClient = (req, res) => {
       libraryName: req.user.libraryName,
       libraryAddress: req.user.libraryAddress,
       email: req.user.email,
-      avatar: req.user.avatar ? req.user.avatar : "",
+      avatar: req.user.avatar ? req.user.avatar : null,
     },
   });
 };
-// isUserVerified
-const isUserVerified = async (req, res) => {
+// update profile
+const updateProfile = async (req, res) => {
+  const { firstName, lastName, gender, email, libraryName, libraryAddress } =
+    req.body;
+  const { user } = req;
+  if (!user)
+    return res
+      .status(401)
+      .json({ success: false, message: "unauthorize access!" });
   try {
-    const user = await User.find({ isVerified: false });
-    // console.log(user);
-    res.json({ success: true, user });
+    await User.updateOne(
+      { email: email },
+      {
+        $set: {
+          firstName,
+          lastName,
+          gender,
+          libraryName,
+          libraryAddress,
+        },
+      },
+      { new: true }
+    );
+    const updatedUser = await User.findOne({ email: email });
+    if (updatedUser) {
+      res.json({
+        success: true,
+        message: "Profile updated successfully",
+        updatedUser,
+      });
+    } else {
+      res.json({
+        success: false,
+        message: "Failed to update...",
+      });
+    }
+  } catch (error) {
+    let status_code = error.status.code != undefined ? error.status_code : 500;
+    let type = error.type != undefined ? error.type : "Bad Request";
+    console.log("type", error.type);
+    return res.status(status_code).send({
+      success: false,
+      error: type,
+      message: error.message,
+    });
+  }
+};
+// contact-us
+const contactUs = async (req, res) => {
+  const { fullName, email, query } = req.body;
+  try {
+    if (!fullName && !email && !query)
+      return sendError(res, "Please provide a valid name, email & query");
+
+    const user = await User.findOne({ email });
+    if (!user) return sendError(res, "User not found, Invalid request");
+
+    const isDataSaved = await ContactUs.create({ fullName, email, query });
+
+    if (isDataSaved) {
+      mailTransport().sendMail({
+        from: process.env.adminMail,
+        to: process.env.adminMail,
+        subject: `Query from ${fullName}`,
+        html: contactUsTemplate("Dear Admin!", fullName, query, email),
+      });
+    } else {
+      res.json({
+        success: false,
+        message: "Message not saved, please try again!",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `${isDataSaved.fullName}! Your Query submitted Successfully`,
+    });
   } catch (error) {
     if (error?.response?.data) {
       const { data } = error.response;
       if (!data.success) return sendError(res, data.error);
-      return console.log("error", error.response.data);
+      return console.log("error", res.response.error);
     }
   }
 };
@@ -410,5 +482,6 @@ module.exports = {
   signOut,
   uploadProfileImage,
   sendProfileToClient,
-  isUserVerified,
+  updateProfile,
+  contactUs,
 };

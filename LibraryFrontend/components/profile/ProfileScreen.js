@@ -1,28 +1,31 @@
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  // View,
-  ImageBackground,
-} from "react-native";
+import { Image, Pressable, StyleSheet, Text } from "react-native";
 import { useMedia, View } from "@gluestack-ui/themed";
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import client from "../api/client";
 import { useLogin } from "../context/LoginProvider";
 import ProgressScreen from "../formElements/ProgressScreen";
-import bgCover from "../../assets/images/splash.jpeg";
 import ProfileText from "./ProfileText";
+import Colors from "../Colors";
+import {
+  moderateScale,
+  moderateScaleVertical,
+  textScale,
+  scale,
+} from "../styles/responsiveSize";
+import { useFonts } from "expo-font";
+import fontFamily from "../styles/fontFamily";
 
+// create a component
 export default function ProfileScreen({ navigation }) {
   const [profileImage, setProfileImage] = useState();
   const [progress, setProgress] = useState(0);
   const { isToken, setProfile, profile } = useLogin();
-  const { firstName, lastName, libraryName, libraryAddress, avatar } = profile;
-  const userName = `${firstName} ${lastName}`;
-  const image = require("../../assets/images/userAvatar.png");
-  
+  const { gender, libraryName, libraryAddress, avatar } = profile;
+
+  const maleAvatar = require("../../assets/images/userAvatar.png");
+  const femaleAvatar = require("../../assets/images/femaleAvatar.png");
+
   const openImageLibrary = async () => {
     const response = await ImagePicker.requestMediaLibraryPermissionsAsync();
     const { status } = response;
@@ -76,123 +79,161 @@ export default function ProfileScreen({ navigation }) {
     }
   };
   const media = useMedia();
+  // fonts
+  const [loaded] = useFonts({
+    raleway_medium: fontFamily.raleway_medium,
+    raleway_regular: fontFamily.raleway_regular,
+    raleway_bold: fontFamily.raleway_Bold,
+    arima_bold: fontFamily.arima_Bold,
+  });
+  if (!loaded) {
+    return <Text>Loading fonts...</Text>;
+  }
   return (
-    <ImageBackground style={{ flex: 1 }} resizeMode="cover">
-      <View
-        style={styles.container}
-        width={media.lg ? "$1/3" : "$full"}
-        marginRight={"auto"}
-        marginLeft={"auto"}
-      >
-        <View style={styles.editProfile}>
+    <View
+      style={styles.container}
+      width={media.lg ? "$1/3" : "$full"}
+      marginRight={"auto"}
+      marginLeft={"auto"}
+    >
+      <View style={styles.editProfile}>
+        <Pressable
+          onPress={() => {
+            navigation.navigate("editProfile", { profile });
+          }}
+        >
           <Text style={styles.editProfileButton}>Edit Profile</Text>
+        </Pressable>
+      </View>
+      {/* prfile image section */}
+      <View style={styles.topSection}>
+        {progress ? <ProgressScreen process={progress} /> : null}
+        <View style={styles.picSection}>
+          <Pressable onPress={openImageLibrary} style={styles.picSection}>
+            {profileImage ? (
+              <Image
+                source={{ uri: profileImage.uri }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            ) : (
+              <>
+                {gender == "Male" ? (
+                  <Image
+                    source={
+                      avatar == "" || avatar == null
+                        ? maleAvatar
+                        : { uri: avatar }
+                    }
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                ) : (
+                  <Image
+                    source={
+                      avatar == "" || avatar == null
+                        ? femaleAvatar
+                        : { uri: avatar }
+                    }
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                )}
+              </>
+            )}
+          </Pressable>
         </View>
-        {/* prfile image section */}
-        <View style={styles.topSection}>
-          {progress ? <ProgressScreen process={progress} /> : null}
-          <View style={styles.picSection}>
-            <Pressable onPress={openImageLibrary} style={styles.picSection}>
-              {profileImage ? (
-                <Image
-                  source={{ uri: profileImage.uri }}
-                  style={{ width: "100%", height: "100%" }}
-                />
-              ) : (
-                <Image
-                  source={avatar == null ? image : { uri: avatar }}
-                  style={{ width: "100%", height: "100%" }}
-                />
-              )}
-            </Pressable>
-          </View>
-          
-          {profileImage ? (
-            <Text
-              onPress={uploadProfileImage}
-              style={[
-                styles.nameText,
-                { backgroundColor: "green", borderRadius: 8, color: "white" },
-              ]}
-            >
-              Upload
-            </Text>
-          ) : (
-            <>
+
+        {profileImage ? (
+          <Text
+            onPress={uploadProfileImage}
+            style={[
+              styles.nameText,
+              {
+                backgroundColor: "green",
+                borderRadius: 8,
+                color: Colors.white,
+              },
+            ]}
+          >
+            Upload
+          </Text>
+        ) : (
+          <>
             <Text style={styles.nameText}>{libraryName}</Text>
             <Text style={styles.address}>{libraryAddress}</Text>
-            </>
-          )}
-        </View>
-        {/* profile text section */}
-        <ProfileText />
+          </>
+        )}
       </View>
-    </ImageBackground>
+      {/* profile text section */}
+      <ProfileText />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: Colors.Charcoal,
   },
   topSection: {
-    height: 300,
+    height: moderateScaleVertical(300),
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "green",
-    borderBottomWidth: 1,
-    borderBlockColor: 'white',
-    marginBottom: 20
+    borderBottomWidth: moderateScaleVertical(1),
+    borderBlockColor: Colors.white,
+    marginBottom: moderateScaleVertical(5),
   },
   picSection: {
-    height: 150,
-    width: 150,
-    borderRadius: 150 / 2,
+    height: moderateScaleVertical(150),
+    width: moderateScaleVertical(150),
+    borderRadius: moderateScaleVertical(150 / 2),
     borderStyle: "solid",
-    borderColor: "#FFBB3B",
-    borderWidth: 4,
+    borderColor: Colors.gold,
+    borderWidth: moderateScaleVertical(4),
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
   },
   UploadBtnText: {
     textAlign: "center",
-    fontSize: 16,
+    fontSize: textScale(16),
+
     fontWeight: "bold",
-    opacity: 0.3,
-    color: "white",
+    opacity: scale(0.3),
+    color: Colors.white,
   },
   nameText: {
     textAlign: "center",
-    padding: 10,
-    fontSize: 16,
+    padding: moderateScaleVertical(10),
+    fontSize: textScale(16),
+    fontFamily: "arima_bold",
     fontWeight: "bold",
     textTransform: "uppercase",
-    letterSpacing: 2,
+    letterSpacing: moderateScale(2),
     // opacity: 0.5,
-    color: "green",
-    marginTop: 10,
+    color: Colors.green,
+    marginTop: moderateScaleVertical(10),
   },
   address: {
     textAlign: "center",
-    color: "green",
-    fontSize: 12
+    color: Colors.green,
+    fontSize: textScale(12),
+    fontFamily: "raleway_regular",
   },
   editProfile: {
     width: "100%",
-    height: 40,
-    marginTop: 5,
+    height: moderateScaleVertical(40),
+    marginTop: moderateScaleVertical(5),
     justifyContent: "center",
     alignItems: "flex-end",
   },
   editProfileButton: {
-    color: "white",
-    marginRight: 10,
-    paddingBottom: 10,
-    paddingTop: 10,
-    paddingHorizontal: 10,
-    borderRadius: 30,
-    borderColor: "white",
-    borderWidth: 1,
+    color: Colors.white,
+    fontFamily: "arima_bold",
+    marginRight: moderateScale(10),
+    paddingBottom: moderateScaleVertical(10),
+    paddingTop: moderateScaleVertical(10),
+    paddingHorizontal: moderateScale(10),
+    borderRadius: moderateScaleVertical(30),
+    borderColor: Colors.white,
+    borderWidth: moderateScaleVertical(1),
   },
 });

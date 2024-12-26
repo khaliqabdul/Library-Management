@@ -42,7 +42,8 @@
     "react-native-ui-datepicker": "^2.0.3",
     "react-native-web": "~0.19.6",
     "socket.io-client": "^4.7.5",
-    "expo-linking": "~5.0.2"
+    "expo-linking": "~5.0.2",
+    "expo-checkbox": "~2.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

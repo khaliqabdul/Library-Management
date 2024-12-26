@@ -78,6 +78,7 @@ export default function FormInput(props) {
           placeholder={placeholder}
           onFocus={focus}
           value={value}
+          defaultValue={defaultValue}
           keyboardType={keyboardType}
           editable={editable}
           maxLength={maxLength}
@@ -110,6 +111,9 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontFamily: "raleway_bold",
     fontSize: textScale(16),
+    color: Colors.Charcoal,
+    paddingBottom: moderateScaleVertical(5),
+    lineHeight: moderateScaleVertical(25),
   },
   rightInputLabel: {
     fontSize: textScale(15),

@@ -26,6 +26,12 @@ const registrationSchema = new mongoose.Schema({
   avatar: { type: String, default: "" },
   tokens: [{ type: Object }],
   isVerified: { type: Boolean, default: false, required: true },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+    // partialFilterExpression: { isVerified: { $exists: true } },
+    // expires: 120,
+  },
 });
 
 // this will execute before saving registrationSchema

@@ -11,7 +11,9 @@ import Chat from "./chat/Chat";
 import BooksList from "./books/BooksList";
 import AddBook from "./books/AddBook";
 import BookDetail from "./books/BookDetail";
-import BookPurchaseHistory from "./books/BookPurchaseHistory"
+import BookPurchaseHistory from "./books/BookPurchaseHistory";
+import Contact from "./contactScreens/Contact";
+import EditProfile from "../components/profile/EditProfile";
 
 function HomeScreen({ navigation }) {
   return (
@@ -58,7 +60,7 @@ export default function Dashboard() {
           drawerLabelStyle: styles.drawerLabelStyles,
         }}
       >
-        <Drawer.Screen name="HomeScreen" component={ProfileScreen} />
+        <Drawer.Screen name="ProfileScreen" component={ProfileScreen} />
         <Drawer.Screen name="Notifications" component={Chat} />
         <Drawer.Screen name="BooksList" component={BooksList} />
         <Drawer.Screen name="addBook" component={AddBook} />
@@ -66,6 +68,8 @@ export default function Dashboard() {
         <Drawer.Screen name="Add Member Screen" component={AddMember} />
         <Drawer.Screen name="bookDetail" component={BookDetail} />
         <Drawer.Screen name="bookPurchase" component={BookPurchaseHistory} />
+        <Drawer.Screen name="contact" component={Contact} />
+        <Drawer.Screen name="editProfile" component={EditProfile} />
       </Drawer.Navigator>
     </>
   );

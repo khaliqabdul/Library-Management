@@ -19,11 +19,26 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
   const [menuIndex, setMenuIndex] = useState(-1);
   const [updatedProfile, setUpdatedProfile] = useState({});
   const { id } = profile;
-  
+
   const { firstName, lastName, email, avatar } = updatedProfile;
   // console.log("avatar",avatar)
   const handleSubMenuClick = (subMenu) => {
-    navigation.navigate(subMenu.label);
+    navigation.navigate(subMenu.label, { profile });
+  };
+  // logout handler
+  const logout = async () => {
+    setLoginPending(true);
+    const isLoggedOut = await signOut();
+    if (isLoggedOut) {
+      setIsLoggedIn(false);
+      setProfile({});
+      setIsToken("");
+    }
+    setLoginPending(false);
+  };
+  // contactUs handler
+  const openContactUs = () => {
+    navigation.navigate("contact");
   };
 
   const picture =
@@ -40,8 +55,8 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
     });
 
     return () => {
-      socketServices.removeListener("send_profile")
-    }
+      socketServices.removeListener("send_profile");
+    };
   }, [updatedProfile]);
 
   useEffect(() => {
@@ -90,7 +105,9 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
             >
               <Box style={styles.menu}>
                 <HStack>
-                  <Icon icon={menuIndex == index ? menu.icon2 : menu.icon1} />
+                  <View style={{ alignSelf: "center" }}>
+                    <Icon icon={menuIndex == index ? menu.icon2 : menu.icon1} />
+                  </View>
                   <Text
                     style={[
                       styles.text,
@@ -115,7 +132,9 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
                       >
                         <Box style={styles.subMenuItem}>
                           <HStack>
-                            <Icon icon={subMenu.icon} />
+                            <View style={{ alignSelf: "center" }}>
+                              <Icon icon={subMenu.icon} />
+                            </View>
                             <Text style={[styles.text]}>{subMenu.title}</Text>
                           </HStack>
                         </Box>
@@ -129,26 +148,12 @@ function CustomDrawerContent({ navigation, progress, ...rest }) {
         })}
       </DrawerContentScrollView>
       {/* Footer Section */}
-      <Pressable
-        style={{
-          position: "absolute",
-          bottom: 50,
-          right: 0,
-          left: 0,
-          padding: 20,
-          backgroundColor: "#f1f1f1",
-        }}
-        onPress={async () => {
-          setLoginPending(true);
-          const isLoggedOut = await signOut();
-          if (isLoggedOut) {
-            setIsLoggedIn(false);
-            setProfile({});
-            setIsToken("");
-          }
-          setLoginPending(false);
-        }}
-      >
+      <Pressable style={styles.contactContainer} onPress={openContactUs}>
+        <Text style={{ fontSize: 16, fontWeight: "400", color: Colors.gray }}>
+          Contact Us
+        </Text>
+      </Pressable>
+      <Pressable style={styles.logoutContainer} onPress={logout}>
         <Text style={{ fontSize: 16, fontWeight: "800" }}>Log out</Text>
       </Pressable>
     </>
@@ -173,5 +178,25 @@ const styles = StyleSheet.create({
   subMenuItem: {
     marginLeft: 16 / 0.5,
     paddingVertical: 10,
+  },
+  logoutContainer: {
+    position: "absolute",
+    bottom: 20,
+    right: 0,
+    left: 0,
+    paddingLeft: 20,
+    paddingVertical: 10,
+    backgroundColor: "#f1f1f1",
+  },
+  contactContainer: {
+    position: "absolute",
+    bottom: 65,
+    right: 0,
+    left: 0,
+    borderBottomColor: Colors.green,
+    borderBottomWidth: 1,
+    paddingLeft: 20,
+    paddingVertical: 10,
+    backgroundColor: "#f1f1f1",
   },
 });

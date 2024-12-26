@@ -3,12 +3,10 @@ import {
   faArrowAltCircleRight,
   faBook,
   faBookAtlas,
-  faCubes,
-  faRegistered,
-  faEllipsisVertical,
-  faAddressBook,
   faUserGraduate,
-  faUser
+  faUserEdit,
+  faUserGroup,
+  faUsersLine,
 } from "@fortawesome/free-solid-svg-icons";
 import Colors from "./Colors";
 
@@ -20,14 +18,14 @@ export const drawerMenu = [
     icon2: faArrowAltCircleDown,
     menuList: [
       {
-        title: "Home Screen",
-        label: "HomeScreen",
-        icon: faRegistered,
+        title: "Profile",
+        label: "ProfileScreen",
+        icon: faUserGraduate,
       },
       {
-        title: "Notifications",
-        label: "Notifications",
-        icon: faRegistered,
+        title: "Edit Profile",
+        label: "editProfile",
+        icon: faUserEdit,
       },
     ],
   },
@@ -58,12 +56,12 @@ export const drawerMenu = [
       {
         title: "Members List",
         label: "MemberList",
-        icon: faRegistered,
+        icon: faUsersLine,
       },
       {
         title: "Add Member",
         label: "Add Member Screen",
-        icon: faUserGraduate,
+        icon: faUserGroup,
       },
     ],
   },

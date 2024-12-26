@@ -10,6 +10,7 @@ import { StackActions } from "@react-navigation/native";
 import { useState } from "react";
 
 import FormInput from "../components/formElements/FormInput";
+import FormTextarea from "../components/formElements/FormTextarea";
 import FormHeader from "../components/formElements/ٖFormHeader";
 import FormSelectorButton from "../components/formElements/FormSelectorButton";
 import FormSubmitButton from "../components/formElements/FormSubmitButton";
@@ -131,9 +132,11 @@ export default function RegisterScreen({ navigation }) {
           updateNotification(message, setMessage, "success");
           resetForm();
           setLoginPending(false);
-          navigation.dispatch(
-            StackActions.replace("VerifyEmail", { Profile: user })
-          );
+          setTimeout(() => {
+            navigation.dispatch(
+              StackActions.replace("VerifyEmail", { Profile: user })
+            );
+          }, 5000);
           // navigation.navigate("VerifyEmail", user);
         } else {
           updateNotification(res.error, setMessage);
@@ -247,18 +250,18 @@ export default function RegisterScreen({ navigation }) {
                 }
               />
               {/* library Address */}
-              <FormInput
-                inputLabel={"Library Address"}
-                type={"text"}
-                placeholder={"Enter Library Address"}
+              <FormTextarea
+                inputLabel="Library Address"
+                placeholder="Enter Library Address"
+                row="10"
                 value={libraryAddress}
+                onChangeText={(value) =>
+                  handleOnChangeText(value, "libraryAddress")
+                }
                 error={
                   !libraryAddress.trim() || libraryAddress.length < 3
                     ? error
                     : null
-                }
-                onChangeText={(value) =>
-                  handleOnChangeText(value, "libraryAddress")
                 }
               />
               {/* Email */}
@@ -305,6 +308,8 @@ export default function RegisterScreen({ navigation }) {
               {/* submit button */}
               <FormSubmitButton
                 title={"Sign Up"}
+                customColor={true}
+                disabled={false}
                 onPress={() => submitForm()}
               />
             </FormControl>
@@ -328,7 +333,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: moderateScaleVertical(8),
   },
   createAccount: {
-    color: Colors.Charcoal,
+    color: Colors.pink,
     fontSize: textScale(18),
     fontFamily: "raleway_medium",
     alignSelf: "center",

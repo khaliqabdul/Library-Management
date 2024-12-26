@@ -4,7 +4,7 @@ import fontFamily from "../styles/fontFamily";
 import { textScale, moderateScaleVertical } from "../styles/responsiveSize";
 import Colors from "../Colors";
 
-const FormSubmitButton = ({ title, onPress }) => {
+const FormSubmitButton = ({ title, onPress, customColor, disabled }) => {
   // fonts
   const [loaded] = useFonts({
     arima_bold: fontFamily.arima_Bold,
@@ -17,7 +17,16 @@ const FormSubmitButton = ({ title, onPress }) => {
   }
   return (
     <>
-      <TouchableOpacity style={styles.container} onPress={onPress}>
+      <TouchableOpacity
+        style={[
+          styles.container,
+          {
+            backgroundColor: customColor ? "rgba(27, 27, 51, 1)" : Colors.gray,
+          },
+        ]}
+        onPress={onPress}
+        disabled={disabled}
+      >
         <Text style={styles.title}>{title}</Text>
       </TouchableOpacity>
     </>
